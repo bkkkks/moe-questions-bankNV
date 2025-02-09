@@ -36,4 +36,4 @@ Actions:
       Connections:
         - Role: CodeCatlyst-questionBank
           Name: "600627328431"
-      Name: Prod
+      Name: Dev
