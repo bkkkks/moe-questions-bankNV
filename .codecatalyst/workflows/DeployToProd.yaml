@@ -1,5 +1,5 @@
 
-Name: DeployToProd
+Name: DeployToDev
 SchemaVersion: "1.0"
 
 # Optional - Set automatic triggers.
