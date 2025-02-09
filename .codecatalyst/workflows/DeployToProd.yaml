@@ -1,5 +1,5 @@
 
-Name: DeployToDev
+Name: DeployToProd
 SchemaVersion: "1.0"
 
 # Optional - Set automatic triggers.
@@ -36,4 +36,4 @@ Actions:
       Connections:
         - Role: CodeCatlyst-questionBank
           Name: "600627328431"
-      Name: Dev
+      Name: Prod
