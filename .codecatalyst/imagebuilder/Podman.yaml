@@ -1,0 +1,20 @@
+name: PodmanInstallationDocument
+description: This document installs Podman.
+schemaVersion: 1.0
+
+phases:
+  - name: build
+    steps:
+      - name: InstallPodman
+        action: ExecuteBash
+        inputs:
+          commands:
+            - yum update -y && yum install -y podman
+
+  - name: validate
+    steps:
+      - name: CheckVersion
+        action: ExecuteBash
+        inputs:
+          commands:
+            - podman --version
