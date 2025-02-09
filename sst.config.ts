@@ -14,7 +14,7 @@ import { FunctionsStack } from "./stacks/FunctionsStack";
 export default {
   config(_input) {
     return {
-      name: "moe-questions-bank",
+      name: "moe-questions-bankNV",
       region: "us-east-1",
     };
   },
