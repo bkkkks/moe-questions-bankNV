@@ -26,7 +26,7 @@ export function FunctionsStack({ stack }: StackContext) {
     //BY MohamedAli no permission on FunctionURL
     //stack.addOutputs({
        // CreateExamFunctionURL: createExamFunction.url,
-    })
+    // })
     
     return { createExamFunction };
 }
