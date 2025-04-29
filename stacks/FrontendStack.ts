@@ -32,7 +32,7 @@ export function FrontendStack({ stack, app }: StackContext) {
       VITE_USER_POOL_CLIENT_ID: auth.auth.userPoolClientId,
       VITE_IDENTITY_POOL_ID: auth.auth.cognitoIdentityPoolId || "",
       VITE_MATERIALS_BUCKET_NAME: materialsBucket.bucketName,
-      VITE_CREATE_EXAM_FUNCTION_URL: `${site.url}/api/createNewExam`,    // I CHENGE IT FROM `${api.url}/createNewExam` || "", TO NEW ONE
+      VITE_CREATE_EXAM_FUNCTION_URL: `${api.url}/createNewExam`,
     },
     cdk: {
       bucket: new s3.Bucket(stack, "StaticSite",{
