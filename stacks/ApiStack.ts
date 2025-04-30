@@ -255,7 +255,7 @@ export function ApiStack({ stack }: StackContext) {
       "Accept",
       "Authorization",
       "Content-Type",
-      "Referer"
+      "Referer",
       "Origin"
     ),
   });
