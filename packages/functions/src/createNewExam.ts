@@ -160,7 +160,7 @@ export async function createExam(event) {
           region: "us-east-1",
         });
         let retrieveCommand = new RetrieveCommand({
-          knowledgeBaseId: process.env.KNOWLEDGE_BASE_ID!, // MohamedAli chang it from knowledgeBaseId: knowledgeBaseId ?? "EU3Z7J6SG6", to the new one
+           knowledgeBaseId: knowledgeBaseId ?? "WCTC0NYEAV", //Add ur KB ID...
           retrievalConfiguration: {
             vectorSearchConfiguration: {
               numberOfResults: 10,
