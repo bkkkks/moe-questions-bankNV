@@ -20,7 +20,7 @@ export function FunctionsStack({ stack }: StackContext) {
     permissions: ["dynamodb", "bedrock", exams_table],
     environment: {
       TABLE_NAME: exams_table.tableName,
-      KNOWLEDGE_BASE_ID: "WCTC0NYEAV";          //bedrockKb.knowledgeBaseId,
+      KNOWLEDGE_BASE_ID: "WCTC0NYEAV",          //bedrockKb.knowledgeBaseId,
     },
   });
     //BY MohamedAli no permission on FunctionURL
