@@ -132,10 +132,12 @@ export async function createExam(event) {
           TableName: tableName,
           Key: { examID: data.examID },
           UpdateExpression:
-            "SET examContent = :examContent, numOfRegenerations = numOfRegenerations + :incr, contributors = :contributors",
+            "SET examContent = :examContent, numOfRegenerations = if_not_exists(numOfRegenerations, :zero) + :incr, contributors = :contributors",
+            
           ExpressionAttributeValues: {
             ":examContent": responseText,
             ":incr": 1,
+            ":zero": 0,
             ":contributors": data.contributors,
           },
         })
