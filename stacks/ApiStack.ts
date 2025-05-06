@@ -125,6 +125,7 @@ export function ApiStack({ stack }: StackContext) {
           permissions: ["dynamodb", exams_table, "bedrock"],
           environment: {
             TABLE_NAME: exams_table.tableName,
+            KNOWLEDGE_BASE_ID: "WCTC0NYEAV",
           },
         },
       },
