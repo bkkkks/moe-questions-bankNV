@@ -1,5 +1,6 @@
 import { BedrockAgentClient, StartIngestionJobCommand } from "@aws-sdk/client-bedrock-agent";
 import { SNSEvent } from 'aws-lambda';
+import { v4 as uuidv4 } from "uuid";
  
 export async function handler(event: any) {
  
@@ -14,9 +15,9 @@ export async function handler(event: any) {
  
   // Define the input for the StartIngestionJobCommand
   const input = {
-    knowledgeBaseId: knowledgeBaseId, // Knowledge Base ID
-    dataSourceId: dataSourceId, // Data Source ID
-    clientToken: clientToken, // Unique client token
+    knowledgeBaseId: "WCTC0NYEAV"; // Knowledge Base ID
+    dataSourceId: "YPKLO8CFFH"; // Data Source ID
+    clientToken: uuidv4() // Unique client token
     description: "Syncing knowledge base data from S3", // Description of the ingestion job
   };
  
