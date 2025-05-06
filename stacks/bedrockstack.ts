@@ -132,8 +132,8 @@ export function BedrockKbLambdaStack({ stack }: StackContext) {
 // }) as any);
  
   stack.addOutputs({
-    KNOWLEDGE_BASE_ID: "WCTC0NYEAV",   //bedrockKb.knowledgeBaseId,
-    DATA_SOURCE_ID: "YPKLO8CFFH",                   //bedrockKb.dataSourceId,
+    KNOWLEDGE_BASE_ID: "WCTC0NYEAV";   //bedrockKb.knowledgeBaseId,
+    DATA_SOURCE_ID: "YPKLO8CFFH";                   //bedrockKb.dataSourceId,
   });
 
   return { bedrockKbRole, bedrockKb }
