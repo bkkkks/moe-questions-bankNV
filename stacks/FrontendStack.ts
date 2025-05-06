@@ -33,6 +33,7 @@ export function FrontendStack({ stack, app }: StackContext) {
       VITE_IDENTITY_POOL_ID: auth.auth.cognitoIdentityPoolId || "",
       VITE_MATERIALS_BUCKET_NAME: materialsBucket.bucketName,
       VITE_CREATE_EXAM_FUNCTION_URL: `${api.url}/createNewExam`,
+      KNOWLEDGE_BASE_ID: "WCTC0NYEAV", // Added by MA
     },
     cdk: {
       bucket: new s3.Bucket(stack, "StaticSite",{
