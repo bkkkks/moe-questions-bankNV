@@ -32,7 +32,7 @@ export async function createExam(event) {
     console.log("Error with DynamoDB client");
   }
   const tableName = process.env.TABLE_NAME;
-  const knowledgeBaseId = "WCTC0NYEAV",             //process.env.KNOWLEDGE_BASE_ID;
+  const knowledgeBaseId = "WCTC0NYEAV";             //process.env.KNOWLEDGE_BASE_ID;
   console.log("Table Name:", process.env.TABLE_NAME);
 
   // Handle empty body
