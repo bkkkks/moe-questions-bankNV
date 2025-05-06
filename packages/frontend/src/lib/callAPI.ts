@@ -46,7 +46,7 @@ export default async function invokeApig({
 
   if (isFunction) { 
     url = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-    service = "lambda";
+    service = "execute-api"; //CHANGE IT FROM LAMBDA TO API 
   }
 
   // sigV4 is needed as our API authorizer is IAM
