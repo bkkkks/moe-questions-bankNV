@@ -162,7 +162,7 @@ export function MyStack({ stack }: StackContext) {
   executorRole.addToPolicy(
     new PolicyStatement({
       actions: ["secretsmanager:GetSecretValue"],
-      resources: ["arn:aws:secretsmanager:us-east-1:248189920021:secret:prod/access-keys-APbcDt"],
+      resources: ["*"],
     })
   );
 
