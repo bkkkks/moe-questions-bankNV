@@ -254,3 +254,4 @@ export async function createExam(event) {
   },
   body: JSON.stringify(body),
 };
+} 
