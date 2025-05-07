@@ -41,7 +41,7 @@ export function BedrockKbLambdaStack({ stack }: StackContext) {
             effect: iam.Effect.ALLOW,
             actions: ["bedrock:InvokeModel"],
             resources: [
-              "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v1",
+                   "arn:aws:bedrock:us-east-1::foundation-model/*",
             ],
           }),
         ],
