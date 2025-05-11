@@ -60,14 +60,21 @@ export function InitialForm() {
 
       console.log(payload);
 
-      const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      console.log("Function URL:", functionURL);
+     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+     // console.log("Function URL:", functionURL);
 
       //@ts-ignore
-      const response = await invokeLambda({
+      //const response = await invokeLambda({
+       // method: "POST",
+        //body: payload,
+        //url: functionURL,
+      
+        // استخدم invokeApig بدل invokeLambda
+       const response = await invokeApig({
+        path: "/createNewExam", // ← ضروري لأنك تستخدم API Gateway
         method: "POST",
         body: payload,
-        url: functionURL,
+        isFunction: false, // ← لأنه API مو Lambda URL
       });
 
 
