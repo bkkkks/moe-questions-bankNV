@@ -45,7 +45,7 @@ export default async function invokeApig({
   let service = "execute-api";
 
   if (isFunction) { 
-    url = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+    url = import.meta.env.VITE_API_URL;
     service = "execute-api"; //CHANGE IT FROM LAMBDA TO API 
   }
 
