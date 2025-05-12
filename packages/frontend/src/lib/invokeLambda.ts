@@ -59,7 +59,7 @@ export default async function invokeLambda({
       },
       body: body,
     });
-*/ Removed by ma
+*/ //commented by ma
     const token = await getUserToken(currentUser);
 
       const response = await fetch(url, {
@@ -77,26 +77,25 @@ export default async function invokeLambda({
       throw new Error(`API call failed: ${errorText}`);
     }*/ //Replace it with this
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ Error response body:", errorText);
-    
-      let parsedError;
-      try {
-        parsedError = JSON.parse(errorText);
-      } catch (e) {
-        throw new Error(`API returned invalid response: ${errorText}`);
-      }
-    
-      throw new Error(parsedError.details || parsedError.error || "API call failed");
-    }
-    
+try {
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("❌ Error response body:", errorText);
 
-    
-    return response;
-  } catch (error) {
-    throw new Error(
-      `Failed to parse response as JSON: ${(error as Error).message}`
-    );
+    let parsedError;
+    try {
+      parsedError = JSON.parse(errorText);
+    } catch (e) {
+      throw new Error(`API returned invalid response: ${errorText}`);
+    }
+
+    throw new Error(parsedError.details || parsedError.error || "API call failed");
   }
+
+  return response; // 
+} catch (error) {
+  throw new Error(
+    `Failed to parse response as JSON: ${(error as Error).message}`
+  );
 }
+
