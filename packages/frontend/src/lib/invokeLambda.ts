@@ -71,11 +71,26 @@ export default async function invokeLambda({
         body: body ? JSON.stringify(body) : undefined,
       });
 
-    if (!response.ok) {
+    /*if (!response.ok) {
       const errorText = await response.text();
       console.error("Error response body:", errorText);
       throw new Error(`API call failed: ${errorText}`);
+    }*/ //Replace it with this
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Error response body:", errorText);
+    
+      let parsedError;
+      try {
+        parsedError = JSON.parse(errorText);
+      } catch (e) {
+        throw new Error(`API returned invalid response: ${errorText}`);
+      }
+    
+      throw new Error(parsedError.details || parsedError.error || "API call failed");
     }
+    
 
     
     return response;
