@@ -50,6 +50,7 @@ export async function createExam(event) {
   let statusCode = 200;
   const headers = {
     "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
   };
 
   let prompt = "";
@@ -251,6 +252,7 @@ export async function createExam(event) {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "*",
     "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
   },
   body: JSON.stringify(body),
 };
