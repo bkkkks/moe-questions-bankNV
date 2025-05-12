@@ -48,7 +48,7 @@ export function FrontendStack({ stack, app }: StackContext) {
             }),
             viewerProtocolPolicy: ViewerProtocolPolicy.HTTPS_ONLY,
             cachePolicy: {
-              cachePolicyId: apiCachePolicy.cachePolicyId,
+              cachePolicyId: "c881211e-fab0-47ed-b72b-b0b6dc5a73e8", // ← استخدم الـ ID هنا مباشرة
             },
             allowedMethods: AllowedMethods.ALLOW_ALL,
             cachedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
