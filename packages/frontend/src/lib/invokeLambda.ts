@@ -42,7 +42,7 @@ export default async function invokeLambda({
   //     },
   //   });
 
-  const aws = new AwsClient({
+  /* const aws = new AwsClient({
     accessKeyId: accessKeyId,
     secretAccessKey: secretAccessKey,
       sessionToken: sessionToken,
@@ -59,6 +59,17 @@ export default async function invokeLambda({
       },
       body: body,
     });
+*/ Removed by ma
+    const token = await getUserToken(currentUser);
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // مهم لـ API Gateway إذا فيه Authorizer
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
 
     if (!response.ok) {
       const errorText = await response.text();
