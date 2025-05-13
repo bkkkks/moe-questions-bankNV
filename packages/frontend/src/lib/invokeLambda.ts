@@ -1,5 +1,3 @@
-import { AwsClient } from "aws4fetch";
-
 import { getCurrentUser } from "./getToken.ts";
 import { getUserToken } from "./getToken.ts";
 import getAwsCredentials from "./getIAMCred.ts";
@@ -27,7 +25,6 @@ export default async function invokeLambda({
   //@ts-ignore
   const { accessKeyId, secretAccessKey, sessionToken } = credentials;
 
-
   if (!accessKeyId || !secretAccessKey || !sessionToken) {
     throw new Error("AWS credentials are not available.");
   }
@@ -45,7 +42,7 @@ export default async function invokeLambda({
   /* const aws = new AwsClient({
     accessKeyId: accessKeyId,
     secretAccessKey: secretAccessKey,
-      sessionToken: sessionToken,
+    sessionToken: sessionToken,
     service: "lambda"
   });
 
@@ -59,43 +56,42 @@ export default async function invokeLambda({
       },
       body: body,
     });
-*/ //commented by ma
-    const token = await getUserToken(currentUser);
+  */ //commented by ma
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // مهم لـ API Gateway إذا فيه Authorizer
-        },
-        body: body ? JSON.stringify(body) : undefined,
-      });
+  // 👇 Replace aws.fetch with standard fetch and use the Bearer token for API Gateway Authorizer
+  const token = await getUserToken(currentUser);
 
-    /*if (!response.ok) {
+  const response = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // مهم لـ API Gateway إذا فيه Authorizer
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  // Replace with this
+  try {
+    if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error response body:", errorText);
-      throw new Error(`API call failed: ${errorText}`);
-    }*/ //Replace it with this
+      console.error("❌ Error response body:", errorText);
 
-try {
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("❌ Error response body:", errorText);
+      let parsedError;
+      try {
+        parsedError = JSON.parse(errorText);
+      } catch (e) {
+        throw new Error(`API returned invalid response: ${errorText}`);
+      }
 
-    let parsedError;
-    try {
-      parsedError = JSON.parse(errorText);
-    } catch (e) {
-      throw new Error(`API returned invalid response: ${errorText}`);
+      throw new Error(
+        parsedError.details || parsedError.error || "API call failed"
+      );
     }
 
-    throw new Error(parsedError.details || parsedError.error || "API call failed");
+    return response;
+  } catch (error) {
+    throw new Error(
+      `Failed to parse response as JSON: ${(error as Error).message}`
+    );
   }
-
-  return response; // 
-} catch (error) {
-  throw new Error(
-    `Failed to parse response as JSON: ${(error as Error).message}`
-  );
 }
-
