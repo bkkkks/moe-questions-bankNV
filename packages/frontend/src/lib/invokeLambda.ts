@@ -2,15 +2,15 @@ import { getCurrentUser } from "./getToken.ts";
 import { getUserToken } from "./getToken.ts";
 import getAwsCredentials from "./getIAMCred.ts";
 
-export default async function export default async function invokeApig({  //change it from lambda to api
+export default async function invokeApig({  //change it from lambda to api
   method = "GET",
   body,
   url,
-}: {
+  }: {
   method?: string;
   body: any;
   url: string;
-}) {
+  }) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
     throw new Error("User is not authenticated");
@@ -94,15 +94,15 @@ export default async function export default async function invokeApig({  //chan
       `Failed to parse response as JSON: ${(error as Error).message}`
     );
   }
-}({
+  }({
   method = "GET",
   body,
   url,
-}: {
+  }: {
   method?: string;
   body: any;
   url: string;
-}) {
+  }) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
     throw new Error("User is not authenticated");
