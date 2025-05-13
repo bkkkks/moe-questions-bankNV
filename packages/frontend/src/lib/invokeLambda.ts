@@ -17,16 +17,16 @@ export default async function invokeApig({
 
   const token = await getUserToken(currentUser);
 
-  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
   try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${path}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error("❌ Error response body:", errorText);
@@ -44,5 +44,9 @@ export default async function invokeApig({
     }
 
     return response;
+  } catch (error) {
+    throw new Error(
+      `Failed to parse response as JSON: ${(error as Error).message}`
+    );
   }
-
+}
