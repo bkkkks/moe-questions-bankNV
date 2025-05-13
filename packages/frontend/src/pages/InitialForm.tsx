@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import invokeLambda from "../lib/invokeLambda.ts";
 import { useAlert } from "../components/AlertComponent.tsx";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
+import invokeApig from "../lib/callAPI.ts"; 
 
 export function InitialForm() {
   const [grade, setGrade] = useState("Grade 10");
@@ -60,22 +61,24 @@ export function InitialForm() {
 
       console.log(payload);
 
-     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-     // console.log("Function URL:", functionURL);
+      const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+      console.log("Function URL:", functionURL);
+
+      const useFunctionUrl = false; // ← أو false حسب الحاجة
 
       //@ts-ignore
-      //const response = await invokeLambda({
-       // method: "POST",
-        //body: payload,
-        //url: functionURL,
-      
-        // استخدم invokeApig بدل invokeLambda
-       const response = await invokeApig({
-        path: "/createNewExam", // ← ضروري لأنك تستخدم API Gateway
-        method: "POST",
-        body: payload,
-        isFunction: false, // ← لأنه API مو Lambda URL
-      });
+      const response = useFunctionUrl
+        ? await invokeLambda({
+            method: "POST",
+            url: import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL,
+            body: payload,
+          })
+        : await invokeApig({
+            path: "/createNewExam",
+            method: "POST",
+            body: payload,
+            isFunction: false,
+          });
 
 
       if (!response.ok) {
