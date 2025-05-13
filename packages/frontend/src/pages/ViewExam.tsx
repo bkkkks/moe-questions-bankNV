@@ -99,7 +99,7 @@ const ViewExam: React.FC = () => {
             url: import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL,
           })
         : await invokeApig({
-            path: "/updateExamWithFeedback", // ← عدّل هذا المسار حسب الموجود في API Stack
+            path: "/feedback", // ← عدّل هذا المسار حسب الموجود في API Stack
             method: "POST",
             body: requestBody,
             isFunction: false,
