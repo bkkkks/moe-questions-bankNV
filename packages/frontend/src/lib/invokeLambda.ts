@@ -44,9 +44,5 @@ export default async function invokeApig({
     }
 
     return response;
-  } catch (error) {
-    throw new Error(
-      `Failed to parse response as JSON: ${(error as Error).message}`
-    );
   }
-}
+
