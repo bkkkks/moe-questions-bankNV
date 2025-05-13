@@ -90,14 +90,21 @@ const ViewExam: React.FC = () => {
     try {
       setLoadingChangeState(true);
 
-      const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      console.log("Function URL:", functionURL);
+      const useFunctionUrl = false; // ← غيّر حسب احتياجك
+      
+      const response = useFunctionUrl
+        ? await invokeLambda({
+            method: "POST",
+            body: requestBody,
+            url: import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL,
+          })
+        : await invokeApig({
+            path: "/updateExamWithFeedback", // ← عدّل هذا المسار حسب الموجود في API Stack
+            method: "POST",
+            body: requestBody,
+            isFunction: false,
+          });
 
-      const response = await invokeLambda({
-        method: "POST",
-        body: requestBody,
-        url: functionURL,
-      });
 
       const data = await response.json();
 
