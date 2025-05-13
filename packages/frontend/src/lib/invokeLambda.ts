@@ -8,7 +8,7 @@ export default async function invokeApig({
 }: {
   method?: string;
   body: any;
-  path: string; // نستخدمه مع VITE_API_BASE_URL
+  path: string; 
 }) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
