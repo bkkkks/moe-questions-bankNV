@@ -8,8 +8,8 @@ import { getCurrentUserEmail } from "../lib/getToken.ts";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
 import { useAlert } from "../components/AlertComponent.tsx";
 import SpeechRecorder from "../components/SpeechRecorder.tsx";
-import { getCurrentUser } from "./getToken.ts";
-import { getUserToken } from "./getToken.ts";
+import { getUserToken, getCurrentUser } from "../lib/getToken";
+
 
 
 interface Part {
