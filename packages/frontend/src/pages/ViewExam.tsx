@@ -6,7 +6,7 @@ import { useAppContext } from "../lib/contextLib.ts";
 import { generateExamPDF } from "../lib/Generators/generatePDF.tsx";
 import { useAlert } from "../components/AlertComponent.tsx";
 import { generateModelPDF } from "../lib/Generators/generateModelAnswerPDF.tsx";
-import invokeLambda from "../lib/invokeLambda.ts";
+//import invokeLambda from "../lib/invokeLambda.ts";
 import { generateExamPDFQ } from "../lib/Generators/generateArabicPDFQ.tsx";
 import { generateExamPDFA } from "../lib/Generators/generateArabicPDFQA.tsx";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
