@@ -5,10 +5,12 @@ export default async function invokeApig({
   method = "GET",
   body,
   path,
+  isFunction = false, 
 }: {
   method?: string;
   body: any;
-  path: string; 
+  path: string;
+  isFunction?: boolean;
 }) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
