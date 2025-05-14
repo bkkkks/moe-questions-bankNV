@@ -26,7 +26,7 @@ export function FrontendStack({ stack, app }: StackContext) {
     buildCommand: "npm run build",
     buildOutput: "dist",
     environment: {
-      VITE_API_URL: api.url,
+      VITE_API_BASE_URL: api.url,
       VITE_REGION: app.region,
       VITE_USER_POOL_ID: auth.auth.userPoolId,
       VITE_USER_POOL_CLIENT_ID: auth.auth.userPoolClientId,
