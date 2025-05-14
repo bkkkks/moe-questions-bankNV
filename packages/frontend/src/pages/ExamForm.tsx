@@ -263,7 +263,6 @@ const ExamForm: React.FC = () => {
         path: "/sendForApproval",
         method: "POST",
         body: payload,
-        isFunction: false,
       });
 
       console.log(response);
