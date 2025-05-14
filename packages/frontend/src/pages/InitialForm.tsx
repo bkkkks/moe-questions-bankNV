@@ -67,7 +67,6 @@ export function InitialForm() {
         path: "/createNewExam",
         method: "POST",
         body: payload,
-        isFunction: false,
         });
       
       console.log("📥 Raw API response:", response);
