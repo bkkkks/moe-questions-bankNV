@@ -1,7 +1,7 @@
 import { getCurrentUser } from "./getToken.ts";
 import { getUserToken } from "./getToken.ts";
 
-export default async function invokeApig({
+export default async function invokeLambda({
   method = "GET",
   body,
   path,
