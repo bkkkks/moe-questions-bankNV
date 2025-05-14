@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { getCurrentUserEmail } from "../lib/getToken.js";
 import { getFormattedDateTime } from "../lib/getDateTime.js";
 import { useNavigate } from "react-router-dom";
-//import invokeLambda from "../lib/invokeLambda.ts";
+import invokeLambda from "../lib/invokeLambda.ts";
 import { useAlert } from "../components/AlertComponent.tsx";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
-import invokeApig from "../lib/callAPI.ts"; 
+//import invokeApig from "../lib/callAPI.ts"; 
 
 export function InitialForm() {
   const [grade, setGrade] = useState("Grade 10");
@@ -63,7 +63,7 @@ export function InitialForm() {
 
       
 
-      const response = await invokeApig({
+      const response = await invokeLambda({
         path: "/createNewExam",
         method: "POST",
         body: payload,
