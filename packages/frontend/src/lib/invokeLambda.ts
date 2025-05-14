@@ -5,7 +5,7 @@ export default async function invokeApig({
   method = "GET",
   body,
   path,
-  isFunction = false, 
+  isFunction, 
 }: {
   method?: string;
   body: any;
