@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { getCurrentUserEmail } from "../lib/getToken.js";
 import { getFormattedDateTime } from "../lib/getDateTime.js";
 import { useNavigate } from "react-router-dom";
-import invokeLambda from "../lib/invokeLambda.ts";
+//import invokeLambda from "../lib/invokeLambda.ts";
 import { useAlert } from "../components/AlertComponent.tsx";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
 import invokeApig from "../lib/callAPI.ts"; 
@@ -90,10 +90,6 @@ export function InitialForm() {
       console.log("Type of response content:", typeof response);
 
       console.log(response.body);
-
-      const data = await response.json();
-
-      console.log(data);
 
       const examID = data.examID;
       navigate("/dashboard/examForm/" + examID);
