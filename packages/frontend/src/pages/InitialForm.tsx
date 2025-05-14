@@ -61,24 +61,20 @@ export function InitialForm() {
 
       console.log(payload);
 
-      const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      console.log("Function URL:", functionURL);
+      
 
-      const useFunctionUrl = false; // ← أو false حسب الحاجة
+      const response = await invokeApig({
+        path: "/createNewExam",
+        method: "POST",
+        body: payload,
+        });
+      
+      console.log("📥 Raw API response:", response);
+      
+      const data = await response.json();
+      
+      console.log("✅ Parsed response data:", data);
 
-      //@ts-ignore
-      const response = useFunctionUrl
-        ? await invokeLambda({
-            method: "POST",
-            url: import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL,
-            body: payload,
-          })
-        : await invokeApig({
-            path: "/createNewExam",
-            method: "POST",
-            body: payload,
-            isFunction: false,
-          });
 
 
       if (!response.ok) {
