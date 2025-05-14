@@ -87,54 +87,48 @@ const ViewExam: React.FC = () => {
       contributors: contributers, // Include contributors
     };
 
-    try {
-      setLoadingChangeState(true);
-
-      const useFunctionUrl = false; // ← غيّر حسب احتياجك
-      
-      const response = useFunctionUrl
-        ? await invokeLambda({
-            method: "POST",
-            body: requestBody,
-            url: import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL,
-          })
-        : await invokeApig({
-            path: "/feedback", // ← عدّل هذا المسار حسب الموجود في API Stack
-            method: "POST",
-            body: requestBody,
-            isFunction: false,
-          });
-
-
-      const data = await response.json();
-
-      // Check if the backend returns the updated content
-      if (data.updatedExamContent) {
-        setExamContent(data.updatedExamContent); // Update the entire exam content
-      }
-
-      if (data.totalMarks) {
-        setMark(data.totalMarks); // Update the total marks
-      }
-
-      if (data.updatedExamContent || data.totalMarks) {
-        // Refresh the page after the success message
-        window.location.reload();
-      } else {
-        showAlert({
-          type: "failure",
-          message: "No changes made",
-        });
-      }
-    } catch (error) {
-      console.error("Error sending feedback:", error);
+   try {
+    setLoadingChangeState(true);
+  
+    console.log("📡 Sending feedback request:", requestBody);
+  
+    const response = await invokeApig({
+      path: "/feedback", // ← عدّل المسار لو تغير في API stack
+      method: "POST",
+      body: requestBody,
+    });
+  
+    const data = await response.json();
+  
+    console.log("✅ Response from backend:", data);
+  
+    // Check if the backend returns the updated content
+    if (data.updatedExamContent) {
+      setExamContent(data.updatedExamContent); // Update the entire exam content
+    }
+  
+    if (data.totalMarks) {
+      setMark(data.totalMarks); // Update the total marks
+    }
+  
+    if (data.updatedExamContent || data.totalMarks) {
+      window.location.reload(); // Reload only if there's something new
+    } else {
       showAlert({
         type: "failure",
-        message: "Failed to load",
+        message: "No changes made",
       });
-    } finally {
-      setLoadingChangeState(false);
     }
+  } catch (error) {
+    console.error("❌ Error sending feedback:", error);
+    showAlert({
+      type: "failure",
+      message: "Failed to send feedback",
+    });
+  } finally {
+    setLoadingChangeState(false);
+  }
+
   };
 
   // Fetch initial data
