@@ -327,19 +327,26 @@ const ExamForm: React.FC = () => {
     try {
       setLoading(true);
 
-      const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      console.log("Function URL:", functionURL);
+    //  const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+      //console.log("Function URL:", functionURL);
 
-      const response = await fetch(functionURL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+      //const response = await fetch(functionURL, {
+        //method: "POST",
+        //headers: {
+         // "Content-Type": "application/json",
+        //},
+        //body: JSON.stringify(requestBody),
+      const token = await getUserToken(currentUser);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/createNewExam`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(requestBody),
+      
       });
-  
       console.log("API Response:", response);
-
       const data = await response.json();
   
       // Check if the backend returns the updated content
