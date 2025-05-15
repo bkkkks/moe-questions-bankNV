@@ -13,7 +13,7 @@ export function ApiStack({ stack }: StackContext) {
   const topic = new Topic(stack, "Report");
   const userTopic = new Topic(stack, "UserTopic");
 
-  const { users_table, exams_table, exams_dataset } = use(DBStack);
+  const { users_table, exams_table, exams_dataset, examRequestsTable  } = use(DBStack); //examRequestsTable added by ma
   const { materialsBucket } = use(StorageStack);
 
   //const bucket = new Bucket(stack, "Audio");
@@ -256,6 +256,17 @@ export function ApiStack({ stack }: StackContext) {
           },
         },
       },
+
+         
+        "GET /checkExamStatus/{id}": {
+          function: {
+            handler: "packages/functions/src/checkExamStatus.main",
+            permissions: [examRequestsTable],
+            environment: {
+              TABLE_NAME: examRequestsTable.tableName,
+            },
+          },
+        },
 
 
   // cache policy to use with cloudfront as reverse proxy to avoid cors
