@@ -244,8 +244,7 @@ export function ApiStack({ stack }: StackContext) {
           },
         },
       },
-    },
-  });
+
         //Added by ma
        "POST /requestExam": {
           function: {
@@ -267,6 +266,8 @@ export function ApiStack({ stack }: StackContext) {
             },
           },
         },
+      },
+  });
 
 
   // cache policy to use with cloudfront as reverse proxy to avoid cors
