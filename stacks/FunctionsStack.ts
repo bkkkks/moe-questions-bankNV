@@ -1,4 +1,20 @@
-import { Function, StackContext, use } from "sst/constructs";
+import { StackContext, use } from "sst/constructs";
+import { DBStack } from "./DBStack";
+import { BedrockKbLambdaStack } from "./bedrockstack";
+
+export function FunctionsStack({ stack }: StackContext) {
+  const { exams_table } = use(DBStack);
+  const { bedrockKb } = use(BedrockKbLambdaStack);
+
+  // حالياً ما فيه شيء يتنفذ في هذا الستاك
+
+  return {};
+}
+
+
+
+
+/*import { Function, StackContext, use } from "sst/constructs";
 import { DBStack } from "./DBStack";
 import { BedrockKbLambdaStack } from "./bedrockstack";
 
@@ -30,3 +46,4 @@ export function FunctionsStack({ stack }: StackContext) {
     
     return { createExamFunction };
 }
+*/
