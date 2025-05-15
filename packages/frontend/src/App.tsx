@@ -103,7 +103,7 @@ const App: React.FC = () => {
               <Route path="examForm/:id" element={<ExamForm />} />
               <Route path="viewExam/:id" element={<ViewExam />} />
               <Route
-                path="audioPage"
+                path="audiopPage"
                 element={
                   <GeneratorRoute>
                     <AudioScriptForm />
