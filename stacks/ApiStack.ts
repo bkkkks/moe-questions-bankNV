@@ -246,6 +246,17 @@ export function ApiStack({ stack }: StackContext) {
       },
     },
   });
+        //Added by ma
+       "POST /requestExam": {
+          function: {
+            handler: "packages/functions/src/requestExam.main",
+            permissions: [examRequestsTable], // ← تأكد تضيف الجدول هنا
+            environment: {
+              TABLE_NAME: examRequestsTable.tableName,
+          },
+        },
+      },
+
 
   // cache policy to use with cloudfront as reverse proxy to avoid cors
   // https://dev.to/larswww/real-world-serverless-part-3-cloudfront-reverse-proxy-no-cors-cgj
