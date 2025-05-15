@@ -246,6 +246,10 @@ export async function createExam(event) {
       body = { error: "Failed to create exam", details: error.message };
     }
   }
+  if (!body) {
+  statusCode = 500;
+  body = { error: "Unexpected server error. No response body." };
+}
 
  return {
   statusCode,
