@@ -48,5 +48,17 @@ export function DBStack({ stack, app }: StackContext) {
     },
   });
 
-  return { users_table, exams_table, exams_dataset };
+  //ADDED BY MA 
+  const examRequestsTable = new Table(stack, "ExamRequests", {
+  fields: {
+    id: "string",         // ID للطلب
+    status: "string",     // pending | processing | completed | failed
+    request: "string",    // محتوى الطلب الأصلي
+    response: "string",   // نتيجة المعالجة
+  },
+  primaryIndex: { partitionKey: "id" },
+});
+
+
+  return { users_table, exams_table, exams_dataset, examRequestsTable  };
 }
