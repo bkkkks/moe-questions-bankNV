@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import invokeLambda from "../lib/invokeLambda.ts";
 import { useAlert } from "../components/AlertComponent.tsx";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
-//import invokeApig from "../lib/callAPI.ts"; 
 
 export function InitialForm() {
   const [grade, setGrade] = useState("Grade 10");
@@ -61,20 +60,15 @@ export function InitialForm() {
 
       console.log(payload);
 
-      
+      const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+      console.log("Function URL:", functionURL);
 
+      //@ts-ignore
       const response = await invokeLambda({
-        path: "/createNewExam",
         method: "POST",
         body: payload,
-        });
-      
-      console.log("📥 Raw API response:", response);
-      
-      const data = await response.json();
-      
-      console.log("✅ Parsed response data:", data);
-
+        url: functionURL,
+      });
 
 
       if (!response.ok) {
@@ -90,6 +84,10 @@ export function InitialForm() {
       console.log("Type of response content:", typeof response);
 
       console.log(response.body);
+
+      const data = await response.json();
+
+      console.log(data);
 
       const examID = data.examID;
       navigate("/dashboard/examForm/" + examID);
