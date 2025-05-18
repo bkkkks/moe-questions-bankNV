@@ -8,7 +8,7 @@ import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 
 const client = new BedrockRuntimeClient({ region: "us-east-1" });
 
-const modelId = "eu.anthropic.claude-3-7-sonnet-20250219-v1:0";
+const modelId = "us.anthropic.claude-3-7-sonnet-20250219-v1:0";
 
 const dbClient = new DynamoDBClient({});
 
