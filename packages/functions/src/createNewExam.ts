@@ -206,13 +206,31 @@ export async function createExam(event) {
 
     console.log("Prompt built");
 
-    const response = await bedrockClient.send(command);
+    let responseText = "";
+    
+    try {
+      const response = await bedrockClient.send(command);
+      
+      const content = response?.output?.message?.content;
+      
+      if (!content || !content[0]?.text) {
+        throw new Error("Invalid response from Bedrock model – missing content");
+      }
+    
+      responseText = content[0].text;
+    
+      console.log("Response from Bedrock:", responseText);
+    } catch (error) {
+      console.error("Bedrock model error:", error);
+      statusCode = 500;
+      body = { error: "Failed to generate exam content", details: error.message || "Unknown error" };
+      return {
+        statusCode,
+        headers,
+        body: JSON.stringify(body)
+      };
+    }
 
-    // Extract and print the response text.
-    //@ts-ignore
-    const responseText = response.output.message.content[0].text;
-
-    console.log(responseText)
 
     console.log("Model done");
     //@ts-ignore
