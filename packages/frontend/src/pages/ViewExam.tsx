@@ -161,7 +161,17 @@ const ViewExam: React.FC = () => {
 
       if (typeof content === "string") {
         try {
-          const parsedContent = JSON.parse(content);
+          //const parsedContent = JSON.parse(content);
+          let cleaned = content.trim();
+          if (cleaned.startsWith("```json")) {
+            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
+          }
+          const jsonStart = cleaned.indexOf("{");
+          if (jsonStart === -1) throw new Error("Missing JSON object start");
+          
+          const cleanJson = cleaned.slice(jsonStart).trim();
+          const parsedContent = JSON.parse(cleanJson);
+
           setExamContent(parsedContent);
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
