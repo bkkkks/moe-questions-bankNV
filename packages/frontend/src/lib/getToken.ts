@@ -9,7 +9,7 @@ export function getUserToken(currentUser: any) {
       reject(new Error("No user is currently logged in."));
       return;
     }
-
+    currentUser = getCurrentUser();
     if (typeof currentUser.getSession !== "function") {
       reject(
         new Error("Invalid Cognito user object: getSession method is missing.")
