@@ -107,7 +107,15 @@ const ExamForm: React.FC = () => {
         // Parse examContent if it's a string
         if (typeof content === "string") {
           try {
-            const parsedContent = JSON.parse(content);
+            // const parsedContent = JSON.parse(content); 
+            let cleaned = content.trim();
+            if (cleaned.startsWith("```json")) {
+              cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
+            }
+            const jsonStart = cleaned.indexOf("{");
+            const cleanJson = cleaned.slice(jsonStart).trim();
+            const parsedContent = JSON.parse(cleanJson);
+
             setExamContent(parsedContent);
           } catch (parseError) {
             console.error("Failed to parse exam content as JSON:", content);
