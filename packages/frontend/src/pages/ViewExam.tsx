@@ -111,15 +111,15 @@ const ViewExam: React.FC = () => {
       const data = await response.json();
 
       // Check if the backend returns the updated content
-      if (data.updatedExamContent) {
-        setExamContent(data.updatedExamContent); // Update the entire exam content
+      if (data.newExamContent) {
+        setExamContent(data.newExamContent); // Update the entire exam content
       }
 
       if (data.totalMarks) {
         setMark(data.totalMarks); // Update the total marks
       }
 
-      if (data.updatedExamContent || data.totalMarks) {
+      if (data.newExamContent || data.totalMarks) {
         // Refresh the page after the success message
         window.location.reload();
       } else {
