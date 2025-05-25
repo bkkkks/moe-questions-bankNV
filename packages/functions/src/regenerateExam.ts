@@ -69,19 +69,32 @@ export async function regenerate(event: APIGatewayProxyEvent) {
     const responseText = response.output.message.content[0].text;
 
 
+    let parsedExam;
+    try {
+      parsedExam = JSON.parse(responseText);
+    } catch (err) {
+      console.error("❌ Failed to parse model response as JSON:", responseText);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: "Invalid JSON returned from model",
+          raw: responseText,
+        }),
+      };
+    }
+    
     await dynamo.send(
       new UpdateCommand({
         TableName: tableName,
-        Key: {
-          examID: examID, // Primary key to find the item
-        },
-        UpdateExpression: "SET examContent = :examContent, contributers = :contributors", // Update only examState
+        Key: { examID },
+        UpdateExpression: "SET examContent = :examContent, contributors = :contributors",
         ExpressionAttributeValues: {
-          ":examContent": responseText,
-          ":contributers": contributers,    // New value for examState
+          ":examContent": JSON.stringify(parsedExam),
+          ":contributors": contributors,
         },
       })
     );
+
 
     return {
       statusCode: 200,
