@@ -108,42 +108,39 @@ const ViewExam: React.FC = () => {
        // url: functionURL,
       //});
       try {
-      const data = await response.json();
-
-      // Check if the backend returns the updated content
-      if (data.newExamContent) {
-        const parsed =
-          typeof data.newExamContent === "string"
-            ? JSON.parse(data.newExamContent)
-            : data.newExamContent;
+        const data = await response.json();
       
-        setExamContent(parsed);
-      }
-
-
-      if (data.totalMarks) {
-        setMark(data.totalMarks); // Update the total marks
-      }
-
-      if (data.newExamContent || data.totalMarks) {
-        // Refresh the page after the success message
-        window.location.reload();
-      } else {
+        if (data.newExamContent) {
+          const parsed =
+            typeof data.newExamContent === "string"
+              ? JSON.parse(data.newExamContent)
+              : data.newExamContent;
+      
+          setExamContent(parsed);
+        }
+      
+        if (data.totalMarks) {
+          setMark(data.totalMarks);
+        }
+      
+        if (data.newExamContent || data.totalMarks) {
+          window.location.reload();
+        } else {
+          showAlert({
+            type: "failure",
+            message: "No changes made",
+          });
+        }
+      } catch (error) {
+        console.error("Error sending feedback:", error);
         showAlert({
           type: "failure",
-          message: "No changes made",
+          message: "Failed to load",
         });
-      
-    } catch (error) {
-      console.error("Error sending feedback:", error);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
-    } finally {
-      setLoadingChangeState(false);
-    }
-  };
+      } finally {
+        setLoadingChangeState(false);
+      }
+
 
   // Fetch initial data
   const fetchInitialData = async () => {
