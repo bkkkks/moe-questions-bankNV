@@ -112,7 +112,14 @@ const ViewExam: React.FC = () => {
 
       // Check if the backend returns the updated content
       if (data.newExamContent) {
-        setExamContent(data.newExamContent); // Update the entire exam content
+        const parsed =
+          typeof data.newExamContent === "string"
+            ? JSON.parse(data.newExamContent)
+            : data.newExamContent;
+      
+        setExamContent(parsed);
+}
+
       }
 
       if (data.totalMarks) {
