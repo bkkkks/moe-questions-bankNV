@@ -118,9 +118,8 @@ const ViewExam: React.FC = () => {
             : data.newExamContent;
       
         setExamContent(parsed);
-}
-
       }
+
 
       if (data.totalMarks) {
         setMark(data.totalMarks); // Update the total marks
@@ -134,7 +133,7 @@ const ViewExam: React.FC = () => {
           type: "failure",
           message: "No changes made",
         });
-      }
+      
     } catch (error) {
       console.error("Error sending feedback:", error);
       showAlert({
@@ -1852,5 +1851,4 @@ const ViewExam: React.FC = () => {
     </div>
   );
 };
-
 export default ViewExam;
