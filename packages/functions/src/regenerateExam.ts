@@ -77,7 +77,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
         Key: { examID },
         UpdateExpression: "SET examContent = :examContent, contributors = :contributors",
         ExpressionAttributeValues: {
-          ":examContent": JSON.stringify(parsedExam), // ← store clean JSON
+          ":examContent": parsedExam, // ← this stores it as a native object in DynamoDB
           ":contributors": contributors,
         },
       })
