@@ -48,7 +48,7 @@ const ViewExam: React.FC = () => {
   const [semester, setSemester] = useState("");
   const [createdBy, setCreator] = useState("");
   const [creationDate, setDate] = useState("");
-  const [contributors, setContributors] = useState(""); //edited to contributors
+  const [contributers, setContributers] = useState("");
   const [examState, setExamState] = useState("");
   const [approverMsg, setApproverMsg] = useState<{
     [partName: string]: string;
@@ -84,7 +84,7 @@ const ViewExam: React.FC = () => {
     const requestBody = {
       examID: id!, // Exam ID
       feedback: approverMsg, // Include all provided feedback
-      contributors: contributors, // Include contributors //edited to contributors
+      contributors: contributers, // Include contributors
     };
 
     try {
@@ -207,7 +207,7 @@ const ViewExam: React.FC = () => {
       setSemester(response.examSemester || "");
       setCreator(response.createdBy || "");
       setDate(response.creationDate || "");
-      setContributors(String(response.contributors || "")); // edited to contributors
+      setContributers(String(response.contributors || ""));
       setDuration(response.examDuration || "");
       setMark(response.examMark || "");
       setExamState(response.examState || "");
