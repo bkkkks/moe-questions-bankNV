@@ -31,7 +31,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
 
   const exam = data.examContent;
   const examID = data.examID;
-  const contributors = data.contributors;
+  const contributers = data.contributers;
   const discription = data.description;
 
 
@@ -75,10 +75,10 @@ export async function regenerate(event: APIGatewayProxyEvent) {
         Key: {
           examID: examID, // Primary key to find the item
         },
-        UpdateExpression: "SET examContent = :examContent, contributors = :contributors", // Update only examState
+        UpdateExpression: "SET examContent = :examContent, contributers = :contributors", // Update only examState
         ExpressionAttributeValues: {
           ":examContent": responseText,
-          ":contributors": contributors,    // New value for examState
+          ":contributers": contributers,    // New value for examState
         },
       })
     );
