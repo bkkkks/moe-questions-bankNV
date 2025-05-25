@@ -75,7 +75,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
         Key: {
           examID: examID, // Primary key to find the item
         },
-        UpdateExpression: "SET examContent = :examContent, contributers = :contributers", // Update only examState
+        UpdateExpression: "SET examContent = :examContent, contributers = :contributors", // Update only examState
         ExpressionAttributeValues: {
           ":examContent": responseText,
           ":contributers": contributers,    // New value for examState
