@@ -207,7 +207,7 @@ const ViewExam: React.FC = () => {
       setSemester(response.examSemester || "");
       setCreator(response.createdBy || "");
       setDate(response.creationDate || "");
-      setContributers(String(response.contributors || ""));
+      setContributors(String(response.contributors || "")); // edited to contributors
       setDuration(response.examDuration || "");
       setMark(response.examMark || "");
       setExamState(response.examState || "");
