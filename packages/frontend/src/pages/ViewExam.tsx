@@ -84,7 +84,7 @@ const ViewExam: React.FC = () => {
     const requestBody = {
       examID: id!, // Exam ID
       feedback: approverMsg, // Include all provided feedback
-      contributors: contributers, // Include contributors
+      contributors: contributors, // Include contributors
     };
 
     try {
