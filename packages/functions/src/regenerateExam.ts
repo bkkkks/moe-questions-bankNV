@@ -31,8 +31,10 @@ export async function regenerate(event: APIGatewayProxyEvent) {
 
   const exam = data.examContent;
   const examID = data.examID;
-  const contributers = data.contributers;
-  const discription = data.description;
+  const contributers = data.contributors;
+  //const discription = data.description;
+  const feedback = data.feedback;
+  
 
 
 
