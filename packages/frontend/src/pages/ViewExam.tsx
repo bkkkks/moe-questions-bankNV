@@ -139,6 +139,7 @@ const ViewExam: React.FC = () => {
       } finally {
         setLoadingChangeState(false);
       }
+  };
 
 
   // Fetch initial data
