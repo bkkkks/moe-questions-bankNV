@@ -40,16 +40,28 @@ export async function regenerate(event: APIGatewayProxyEvent) {
 
   try {
     const prompt = `
-      As a school exam generator, you will be given an exam that you will have to change based on the
-      user's discription. Change only what the user asked for. Return only the newly modified exam.
-      
-
-      This is the user's discription and changes to do: ${feedback}.
-
-
-      This is the exam to modify: 
-      ${exam}
-      the type of your response should be JSON OBJECT ONLY
+    You are a school exam generator AI.
+    
+    You will receive a JSON object that represents an existing exam, and a list of feedback for specific sections.
+    Each feedback item includes a section and what the user wants to change in it.
+    
+    Modify only the parts of the exam that relate to the feedback. Do not invent or modify anything that is not mentioned in the feedback.
+    
+    Return ONLY the modified exam as a valid JSON object (not stringified).
+    
+    ---
+    
+    📌 Feedback (instructions from user):
+    ${JSON.stringify(feedback, null, 2)}
+    
+    ---
+    
+    📝 Original Exam:
+    ${JSON.stringify(exam, null, 2)}
+    
+    ⚠️ Important:
+    - Your response must be a valid JSON object ONLY.
+    - Do not explain. Just return the JSON.
     `;
 
     const conversation = [
