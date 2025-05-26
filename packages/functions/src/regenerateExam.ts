@@ -81,22 +81,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
     // Extract and print the response text.
     const responseText = response.output.message.content[0].text;
     console.log("🤖 Claude Response:", responseText);
-    
 
-
-    let responseText;
-    try {
-      responseText  = JSON.parse(responseText);
-    } catch (err) {
-      console.error("❌ Failed to parse model response as JSON:", responseText);
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          error: "Invalid JSON returned from model",
-          raw: responseText,
-        }),
-      };
-    }
     
     await dynamo.send(
       new UpdateCommand({
