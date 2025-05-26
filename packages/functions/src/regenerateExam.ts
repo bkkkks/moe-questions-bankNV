@@ -80,6 +80,34 @@ export async function regenerate(event: APIGatewayProxyEvent) {
 
     // Extract and print the response text.
     const responseText = response.output.message.content[0].text;
+      
+      let parsedExam;
+      try {
+        
+        parsedExam = typeof responseText === "string"
+          ? JSON.parse(responseText)
+          : responseText;
+      
+        // في حال كان Double-escaped
+        if (typeof parsedExam === "string") {
+          parsedExam = JSON.parse(parsedExam);
+        }
+      
+        if (!parsedExam.sections || !Array.isArray(parsedExam.sections)) {
+          throw new Error("Invalid exam format — missing sections");
+        }
+      
+      } catch (err) {
+        console.error("❌ Failed to parse exam content:", responseText);
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "Invalid exam format",
+            raw: responseText,
+          }),
+        };
+      }
+
     console.log("🤖 Claude Response:", responseText);
 
     
