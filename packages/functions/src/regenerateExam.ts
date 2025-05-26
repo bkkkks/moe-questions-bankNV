@@ -8,14 +8,14 @@ import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 
 const client = new BedrockRuntimeClient({ region: "us-east-1" });
 
-const modelId = "anthropic.claude-instant-v1";
+const modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0";
 
 const dbClient = new DynamoDBClient({});
 
 const dynamo = DynamoDBDocumentClient.from(dbClient);
 
 export async function regenerate(event: APIGatewayProxyEvent) {
-  const tableName = "bank-moe-questions-bank-Exams";
+  const tableName = "bank-moe-questions-bank-Exams"
 
   let data;
 
