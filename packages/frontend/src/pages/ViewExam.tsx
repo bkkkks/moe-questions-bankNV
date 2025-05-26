@@ -107,7 +107,6 @@ const ViewExam: React.FC = () => {
        // body: requestBody,
        // url: functionURL,
       //});
-      try {
         const data = await response.json();
       
         if (data.newExamContent) {
