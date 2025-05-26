@@ -29,4 +29,13 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
+    - name: Run tests and generate coverage
+      run: npm run test:coverage
+    
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage
+        path: coverage/
+
     - run: npx sst build --stage prod
