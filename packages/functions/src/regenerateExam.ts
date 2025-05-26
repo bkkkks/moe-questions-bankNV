@@ -44,7 +44,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
       user's discription. Change only what the user asked for. Return only the newly modified exam.
       
 
-      This is the user's discription and changes to do: ${discription}.
+      This is the user's discription and changes to do: ${feedback}.
 
 
       This is the exam to modify: 
