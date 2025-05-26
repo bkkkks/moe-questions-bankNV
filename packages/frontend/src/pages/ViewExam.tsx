@@ -83,8 +83,10 @@ const ViewExam: React.FC = () => {
   const handleFeedbackSubmission = async () => {
     const requestBody = {
       examID: id!, // Exam ID
+      examContent: examContent,
       feedback: approverMsg, // Include all provided feedback
       contributors: contributors, // Include contributors
+      
     };
 
     try {
