@@ -15,7 +15,8 @@ const dbClient = new DynamoDBClient({});
 const dynamo = DynamoDBDocumentClient.from(dbClient);
 
 export async function regenerate(event: APIGatewayProxyEvent) {
-  const tableName = process.env.TABLE_NAME;
+  const tableName = "bank-moe-questions-bank-Exams";
+
   let data;
 
   //Handle empty body
@@ -29,10 +30,10 @@ export async function regenerate(event: APIGatewayProxyEvent) {
   data = JSON.parse(event.body);
   console.log(event.body);
 
-  const exam = data.examContent;
+  
   const examID = data.examID;
+  const exam = data.examContent;
   const contributors = data.contributors;
-  //const discription = data.description;
   const feedback = data.feedback;
   
 
