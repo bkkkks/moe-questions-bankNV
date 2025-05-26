@@ -84,9 +84,9 @@ export async function regenerate(event: APIGatewayProxyEvent) {
     
 
 
-    let parsedExam;
+    let responseText;
     try {
-      parsedExam = JSON.parse(responseText);
+      responseText  = JSON.parse(responseText);
     } catch (err) {
       console.error("❌ Failed to parse model response as JSON:", responseText);
       return {
@@ -104,7 +104,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
         Key: { examID },
         UpdateExpression: "SET examContent = :examContent, contributors = :contributors",
         ExpressionAttributeValues: {
-          ":examContent": JSON.stringify(parsedExam),
+          ":examContent": JSON.stringify(responseText),
           ":contributors": contributors,
         },
       })
