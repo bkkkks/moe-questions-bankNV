@@ -21,7 +21,7 @@
   },
   "workspaces": [
     "packages/*"
-    //aa
+    
   ],
   "dependencies": {
     "@aws-amplify/storage": "^6.7.3",
