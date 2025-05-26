@@ -60,7 +60,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
     ${JSON.stringify(exam, null, 2)}
     
     ⚠️ Important:
-     - Reterive the whole exam with the updated version (the question that i tell you to change)
+     -Reterive the whole exam with the updated version (the question that i tell you to change)
     - Your response must be a valid JSON object ONLY.
     - Do not explain. Just return the JSON.
     `;
