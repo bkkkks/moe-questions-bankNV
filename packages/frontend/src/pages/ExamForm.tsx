@@ -361,9 +361,21 @@ const ExamForm: React.FC = () => {
       const data = await response.json();
   
       // Check if the backend returns the updated content
-      if (data.newExamContent) {
-        setExamContent(data.newExamContent); // Update the entire exam content
+         // if (data.newExamContent) {
+         //   setExamContent(data.newExamContent); // Update the entire exam content
+        //  }
+      try {
+        const cleaned = data.newExamContent.trim();
+        const jsonStart = cleaned.indexOf("{");
+        const cleanJson = cleaned.slice(jsonStart).trim();
+        const parsed = JSON.parse(cleanJson);
+        setExamContent(parsed);
+      } catch (err) {
+        console.error("Failed to parse updated exam content", data.newExamContent);
+        showAlert({ type: "failure", message: "Invalid exam format after update." });
+        return; // مهم: لا تكمل بعد فشل التحليل
       }
+
   
       if (data.totalMarks) {
         setMark(data.totalMarks); // Update the total marks
