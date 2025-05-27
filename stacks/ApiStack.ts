@@ -112,7 +112,7 @@ export function ApiStack({ stack }: StackContext) {
           timeout: 180,
           permissions: ["bedrock", "dynamodb", exams_table],
           environment: {
-            TABLE_NAME: exams_table.tableName,
+            TABLE_NAME: "bank-moe-questions-bank-Exams",
           },
         },
       },
