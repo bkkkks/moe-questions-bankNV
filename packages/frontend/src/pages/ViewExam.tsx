@@ -139,7 +139,12 @@ const ViewExam: React.FC = () => {
             }
           }
         
-          setExamContent(updatedExam); 
+          setExamContent((prev) => ({
+            ...(prev ?? {}), // fallback إذا كان null
+            ...updatedExam, // المحتوى الجديد المعدل (عادةً فقط sections)
+            parts: updatedExam.parts ?? prev?.parts ?? [], 
+          }));
+
         }
 
       
