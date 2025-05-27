@@ -152,8 +152,20 @@ const ViewExam: React.FC = () => {
           setMark(data.totalMarks);
         }
       
+        //if (data.newExamContent || data.totalMarks) {
+          //window.location.reload();
         if (data.newExamContent || data.totalMarks) {
-          window.location.reload();
+          showAlert({
+            type: "success",
+            message: "Changes applied successfully",
+          });
+        } else {
+          showAlert({
+            type: "failure",
+            message: "No changes made",
+          });
+        }
+
         } else {
           showAlert({
             type: "failure",
