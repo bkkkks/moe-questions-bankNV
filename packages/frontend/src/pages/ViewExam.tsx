@@ -83,14 +83,15 @@ const ViewExam: React.FC = () => {
   const handleFeedbackSubmission = async () => {
     const requestBody = {
       examID: id!, // Exam ID
-      examContent: examContent,
       feedback: approverMsg, // Include all provided feedback
       contributors: contributors, // Include contributors
-      
     };
 
     try {
       setLoadingChangeState(true);
+
+     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+      //console.log("Function URL:", functionURL);
 
       const apiURL = `${import.meta.env.VITE_API_URL}/regenerate`;
 
@@ -100,84 +101,36 @@ const ViewExam: React.FC = () => {
         url: apiURL,
       });
 
+      const data = await response.json();
 
-     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      //console.log("Function URL:", functionURL);
+      // Check if the backend returns the updated content
+      if (data.newExamContent) {
+        setExamContent(data.newExamContent); // Update the entire exam content
+      }
 
-     // const response = await invokeLambda({
-        //method: "POST",
-       // body: requestBody,
-       // url: functionURL,
-      //});
-        const data = await response.json();
-      
-       // if (data.newExamContent) {
-         // const parsed =
-           // typeof data.newExamContent === "string"
-            //  ? JSON.parse(data.newExamContent)
-              //: data.newExamContent;
-      
-          //setExamContent(parsed);
-        //}
+      if (data.totalMarks) {
+        setMark(data.totalMarks); // Update the total marks
+      }
 
-        if (data.newExamContent) {
-          const parsed =
-            typeof data.newExamContent === "string"
-              ? JSON.parse(data.newExamContent)
-              : data.newExamContent;
-        
-          // ✅ دمج المعدل داخل النسخة الحالية من الامتحان
-          const updatedExam = { ...examContent };
-        
-          for (const updatedSection of parsed.sections) {
-            const index = updatedExam.sections.findIndex(
-              (s: any) =>
-                s.id === updatedSection.id || s.section === updatedSection.section
-            );
-            if (index !== -1) {
-              updatedExam.sections[index] = updatedSection;
-            }
-          }
-        
-          setExamContent((prev) => ({
-            ...(prev ?? {}), // fallback إذا كان null
-            ...updatedExam, // المحتوى الجديد المعدل (عادةً فقط sections)
-            parts: updatedExam.parts ?? prev?.parts ?? [], 
-          }));
-
-        }
-
-      
-        if (data.totalMarks) {
-          setMark(data.totalMarks);
-        }
-      
-        //if (data.newExamContent || data.totalMarks) {
-          //window.location.reload();
-        if (data.newExamContent || data.totalMarks) {
-          showAlert({
-            type: "success",
-            message: "Changes applied successfully",
-          });
-        } else {
-          showAlert({
-            type: "failure",
-            message: "No changes made",
-          });
-        }
-
-
-      } catch (error) {
-        console.error("Error sending feedback:", error);
+      if (data.newExamContent || data.totalMarks) {
+        // Refresh the page after the success message
+        window.location.reload();
+      } else {
         showAlert({
           type: "failure",
-          message: "Failed to load",
+          message: "No changes made",
         });
-      } finally {
-        setLoadingChangeState(false);
       }
+    } catch (error) {
+      console.error("Error sending feedback:", error);
+      showAlert({
+        type: "failure",
+        message: "Failed to load",
+      });
+    } finally {
+      setLoadingChangeState(false);
+    }
   };
-
 
   // Fetch initial data
   const fetchInitialData = async () => {
@@ -210,17 +163,7 @@ const ViewExam: React.FC = () => {
 
       if (typeof content === "string") {
         try {
-          //const parsedContent = JSON.parse(content);
-          let cleaned = content.trim();
-          if (cleaned.startsWith("```json")) {
-            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
-          }
-          const jsonStart = cleaned.indexOf("{");
-          if (jsonStart === -1) throw new Error("Missing JSON object start");
-          
-          const cleanJson = cleaned.slice(jsonStart).trim();
-          const parsedContent = JSON.parse(cleanJson);
-
+          const parsedContent = JSON.parse(content);
           setExamContent(parsedContent);
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
@@ -1885,4 +1828,5 @@ const ViewExam: React.FC = () => {
     </div>
   );
 };
+
 export default ViewExam;
