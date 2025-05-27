@@ -93,7 +93,7 @@ const ViewExam: React.FC = () => {
      // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
       //console.log("Function URL:", functionURL);
 
-      const apiURL = `${import.meta.env.VITE_API_URL}/regenerate`;
+      const apiURL = `${import.meta.env.VITE_API_URL}/feedback`;
 
       const response = await invokeLambda({
         method: "POST",
