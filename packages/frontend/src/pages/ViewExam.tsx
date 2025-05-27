@@ -111,14 +111,37 @@ const ViewExam: React.FC = () => {
       //});
         const data = await response.json();
       
+       // if (data.newExamContent) {
+         // const parsed =
+           // typeof data.newExamContent === "string"
+            //  ? JSON.parse(data.newExamContent)
+              //: data.newExamContent;
+      
+          //setExamContent(parsed);
+        //}
+
         if (data.newExamContent) {
           const parsed =
             typeof data.newExamContent === "string"
               ? JSON.parse(data.newExamContent)
               : data.newExamContent;
-      
-          setExamContent(parsed);
+        
+          // ✅ دمج المعدل داخل النسخة الحالية من الامتحان
+          const updatedExam = { ...examContent };
+        
+          for (const updatedSection of parsed.sections) {
+            const index = updatedExam.sections.findIndex(
+              (s: any) =>
+                s.id === updatedSection.id || s.section === updatedSection.section
+            );
+            if (index !== -1) {
+              updatedExam.sections[index] = updatedSection;
+            }
+          }
+        
+          setExamContent(updatedExam); 
         }
+
       
         if (data.totalMarks) {
           setMark(data.totalMarks);
