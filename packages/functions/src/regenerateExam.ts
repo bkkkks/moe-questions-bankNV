@@ -16,7 +16,6 @@ const dynamo = DynamoDBDocumentClient.from(dbClient);
 
 export async function regenerate(event: APIGatewayProxyEvent) {
   const tableName = "bank-moe-questions-bank-Exams"
-
   let data;
 
   //Handle empty body
@@ -30,38 +29,26 @@ export async function regenerate(event: APIGatewayProxyEvent) {
   data = JSON.parse(event.body);
   console.log(event.body);
 
-  
   const examID = data.examID;
   const exam = data.examContent;
   const contributors = data.contributors;
   const feedback = data.feedback;
-  
 
 
 
   try {
     const prompt = `
-    📚 As a school exam generator AI, your job is to update specific parts of an exam based on user feedback.
-    
-    ✏️ Modify only the parts related to the feedback. Do NOT change anything else.
-    
-    ---
-    
-    📌 Feedback (from user):
-    ${JSON.stringify(feedback, null, 2)}
-    
-    ---
-    
-    📝 Original Exam:
-    ${JSON.stringify(exam, null, 2)}
-    
-    ---
-    
-    ⚠️ Important:
-    - Return the full updated exam as a valid JSON OBJECT.
-    - Do not add explanations. Just return the JSON object directly.
-    `;
+      As a school exam generator, you will be given an exam that you will have to change based on the
+      user's discription. Change only what the user asked for. Return only the newly modified exam.
+      
 
+      This is the user's discription and changes to do: ${feedback}.
+
+
+      This is the exam to modify: 
+      ${exam}
+      the type of your response should be JSON OBJECT ONLY
+    `;
 
     const conversation = [
       {
@@ -80,55 +67,27 @@ export async function regenerate(event: APIGatewayProxyEvent) {
 
     // Extract and print the response text.
     const responseText = response.output.message.content[0].text;
-      
-      let parsedExam;
-      try {
-        
-        parsedExam = typeof responseText === "string"
-          ? JSON.parse(responseText)
-          : responseText;
-      
-        // في حال كان Double-escaped
-        if (typeof parsedExam === "string") {
-          parsedExam = JSON.parse(parsedExam);
-        }
-      
-        if (!parsedExam.sections || !Array.isArray(parsedExam.sections)) {
-          throw new Error("Invalid exam format — missing sections");
-        }
-      
-      } catch (err) {
-        console.error("❌ Failed to parse exam content:", responseText);
-        return {
-          statusCode: 400,
-          body: JSON.stringify({
-            error: "Invalid exam format",
-            raw: responseText,
-          }),
-        };
-      }
 
-    console.log("🤖 Claude Response:", responseText);
 
-    
     await dynamo.send(
       new UpdateCommand({
         TableName: tableName,
-        Key: { examID },
-        UpdateExpression: "SET examContent = :examContent, contributors = :contributors",
+        Key: {
+          examID: examID, // Primary key to find the item
+        },
+        UpdateExpression: "SET examContent = :examContent, contributors = :contributors", // Update only examState
         ExpressionAttributeValues: {
-          ":examContent": JSON.stringify(parsedExam), 
-          ":contributors": contributors,
+          ":examContent": responseText,
+          ":contributors": contributors,    // New value for examState
         },
       })
     );
-
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        newExamContent: parsedExam,
+        newExamContent: responseText,
       }),
     };
   } catch (error) {
