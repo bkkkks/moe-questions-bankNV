@@ -370,13 +370,19 @@ const ExamForm: React.FC = () => {
       }
   
       // // Provide feedback to the user
-      if (data.newExamContent || data.totalMarks) {
+      /*if (data.newExamContent || data.totalMarks) {
         // Refresh the page after the success message
         window.location.reload();
       } else {
         showAlert({
           type: "success",
           message: "Changes applied",
+        });
+      }*/
+      if (data.newExamContent || data.totalMarks) {
+        showAlert({
+          type: "success",
+          message: "Exam updated successfully!",
         });
       }
   
