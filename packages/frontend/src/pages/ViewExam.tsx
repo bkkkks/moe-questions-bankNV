@@ -166,12 +166,7 @@ const ViewExam: React.FC = () => {
           });
         }
 
-        } else {
-          showAlert({
-            type: "failure",
-            message: "No changes made",
-          });
-        }
+
       } catch (error) {
         console.error("Error sending feedback:", error);
         showAlert({
