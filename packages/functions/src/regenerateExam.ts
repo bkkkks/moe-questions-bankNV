@@ -117,7 +117,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
         Key: { examID },
         UpdateExpression: "SET examContent = :examContent, contributors = :contributors",
         ExpressionAttributeValues: {
-          ":examContent": parsedExam,
+          ":examContent": JSON.stringify(parsedExam), 
           ":contributors": contributors,
         },
       })
