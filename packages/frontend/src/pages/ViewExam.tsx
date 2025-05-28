@@ -157,10 +157,14 @@ const ViewExam: React.FC = () => {
       const content = response.examContent;
       if (typeof content === "string") {
         try {
-          const cleaned = content.trim();
-          const jsonStart = cleaned.indexOf("{");
-          const cleanJson = cleaned.slice(jsonStart).trim();
-          const parsedContent: ExamContent = JSON.parse(cleanJson);
+          const jsonStart = content.indexOf("{");
+          const jsonEnd = content.lastIndexOf("}");
+          if (jsonStart === -1 || jsonEnd === -1) {
+            throw new Error("Invalid exam content format");
+          }
+          const jsonString = content.substring(jsonStart, jsonEnd + 1).trim();
+          const parsedContent: ExamContent = JSON.parse(jsonString);
+
       
           if (!parsedContent.parts || !Array.isArray(parsedContent.parts)) {
             throw new Error("Missing or invalid parts in exam content");
