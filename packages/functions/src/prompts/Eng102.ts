@@ -152,7 +152,7 @@ Layout and Formatting:
 - The title of the exam, "English 102 Unified Tracks Second Semester Final Exam," should be centered at the top of the first page.
 - The page numbers should be located in the top right corner of each page.
 - Return the final exam as a JSON response only, do not include any other text.
--Return only valid JSON. Do NOT include any prefix text, explanations, or markdown code fences (like ```json).
+-Return only valid JSON. Do NOT include any prefix text, explanations, or markdown code fences.
 `;
 
 // Note the prompt must be changed and organized as JSON template with instructions 
