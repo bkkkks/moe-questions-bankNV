@@ -69,7 +69,7 @@ const ViewExam: React.FC = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert(); // to show alerts
   const [loading, setLoading] = useState(false);
-  var content: string;
+  
 
   // Handler to update feedback for a specific section
   const handleFeedbackChange = (partName: string, value: string) => {
