@@ -164,7 +164,8 @@ const ViewExam: React.FC = () => {
           const cleaned = content.trim();
           const jsonStart = cleaned.indexOf("{");
           const cleanJson = cleaned.slice(jsonStart).trim();
-          const parsedContent = JSON.parse(cleanJson);
+          const parsedContent = JSON.parse(cleanJson) as ExamContent;
+
       
           setExamContent(parsedContent);
           setMark(parsedContent.total_marks);
@@ -178,7 +179,8 @@ const ViewExam: React.FC = () => {
           return;
         }
       } else if (typeof content === "object") {
-        console.log("is object");
+        const parsedContent = content as ExamContent;
+        
         setExamContent(content);
         setMark(content.total_marks);
         setDuration(content.time);
