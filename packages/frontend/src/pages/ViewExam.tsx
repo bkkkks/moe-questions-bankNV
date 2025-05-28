@@ -154,7 +154,7 @@ const ViewExam: React.FC = () => {
       console.log("Initial Data Loaded:", response);
 
 
-
+      const content = response.examContent;
       if (typeof content === "string") {
         try {
           const cleaned = content.trim();
