@@ -153,18 +153,16 @@ const ViewExam: React.FC = () => {
 
       console.log("Initial Data Loaded:", response);
 
-      if (response.examState === "building") {
-        navigate("/dashboard/examForm/" + id);
-      }
-
-      content = response.examContent;
-
-      console.log(content);
-
       if (typeof content === "string") {
         try {
-          const parsedContent = JSON.parse(content);
+          const cleaned = content.trim();
+          const jsonStart = cleaned.indexOf("{");
+          const cleanJson = cleaned.slice(jsonStart).trim();
+          const parsedContent = JSON.parse(cleanJson);
+      
           setExamContent(parsedContent);
+          setMark(parsedContent.total_marks);
+          setDuration(parsedContent.time);
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
           showAlert({
@@ -175,7 +173,9 @@ const ViewExam: React.FC = () => {
         }
       } else if (typeof content === "object") {
         console.log("is object");
-        setExamContent(content); // Set directly if already an object
+        setExamContent(content);
+        setMark(content.total_marks);
+        setDuration(content.time);
       } else {
         console.error("Unexpected examContent format:", typeof content);
         showAlert({
@@ -184,6 +184,7 @@ const ViewExam: React.FC = () => {
         });
         return;
       }
+
 
       setGrade(response.examClass || "");
       setSubject(response.examSubject || "");
