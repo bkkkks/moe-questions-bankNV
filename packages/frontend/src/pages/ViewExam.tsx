@@ -165,6 +165,9 @@ const ViewExam: React.FC = () => {
           const jsonString = content.substring(jsonStart, jsonEnd + 1).trim();
           const parsedContent: ExamContent = JSON.parse(jsonString);
 
+          if (!parsedContent.parts && parsedContent.sections) {
+            parsedContent.parts = parsedContent.sections;
+          }
       
           if (!parsedContent.parts || !Array.isArray(parsedContent.parts)) {
             throw new Error("Missing or invalid parts in exam content");
