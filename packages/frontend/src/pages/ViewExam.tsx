@@ -48,7 +48,7 @@ const ViewExam: React.FC = () => {
   const [semester, setSemester] = useState("");
   const [createdBy, setCreator] = useState("");
   const [creationDate, setDate] = useState("");
-  const [contributors, setContributors] = useState("");
+  const [contributers, setContributers] = useState("");
   const [examState, setExamState] = useState("");
   const [approverMsg, setApproverMsg] = useState<{
     [partName: string]: string;
@@ -69,7 +69,7 @@ const ViewExam: React.FC = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert(); // to show alerts
   const [loading, setLoading] = useState(false);
-  
+  var content: string;
 
   // Handler to update feedback for a specific section
   const handleFeedbackChange = (partName: string, value: string) => {
@@ -84,35 +84,33 @@ const ViewExam: React.FC = () => {
     const requestBody = {
       examID: id!, // Exam ID
       feedback: approverMsg, // Include all provided feedback
-      contributors: contributors, // Include contributors
+      contributors: contributers, // Include contributors
     };
 
     try {
       setLoadingChangeState(true);
 
-     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      //console.log("Function URL:", functionURL);
-
-      const apiURL = `${import.meta.env.VITE_API_URL}/feedback`;
+      const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+      console.log("Function URL:", functionURL);
 
       const response = await invokeLambda({
         method: "POST",
         body: requestBody,
-        url: apiURL,
+        url: functionURL,
       });
 
       const data = await response.json();
 
       // Check if the backend returns the updated content
-      if (data.newExamContent) {
-        setExamContent(data.newExamContent); // Update the entire exam content
+      if (data.updatedExamContent) {
+        setExamContent(data.updatedExamContent); // Update the entire exam content
       }
 
       if (data.totalMarks) {
         setMark(data.totalMarks); // Update the total marks
       }
 
-      if (data.newExamContent || data.totalMarks) {
+      if (data.updatedExamContent || data.totalMarks) {
         // Refresh the page after the success message
         window.location.reload();
       } else {
@@ -153,29 +151,28 @@ const ViewExam: React.FC = () => {
 
       console.log("Initial Data Loaded:", response);
 
+      if (response.examState === "building") {
+        navigate("/dashboard/examForm/" + id);
+      }
 
-      const content = response.examContent;
+      content = response.examContent;
+
+      console.log(content);
+
       if (typeof content === "string") {
         try {
-          const jsonStart = content.indexOf("{");
-          const jsonEnd = content.lastIndexOf("}");
-          if (jsonStart === -1 || jsonEnd === -1) {
-            throw new Error("Invalid exam content format");
+          //const parsedContent = JSON.parse(content);
+          let cleaned = content.trim();
+          if (cleaned.startsWith("```json")) {
+            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
           }
-          const jsonString = content.substring(jsonStart, jsonEnd + 1).trim();
-          const parsedContent: ExamContent = JSON.parse(jsonString);
+          const jsonStart = cleaned.indexOf("{");
+          if (jsonStart === -1) throw new Error("Missing JSON object start");
+          
+          const cleanJson = cleaned.slice(jsonStart).trim();
+          const parsedContent = JSON.parse(cleanJson);
 
-          if (!parsedContent.parts && parsedContent.sections) {
-            parsedContent.parts = parsedContent.sections;
-          }
-      
-          if (!parsedContent.parts || !Array.isArray(parsedContent.parts)) {
-            throw new Error("Missing or invalid parts in exam content");
-          }
-      
           setExamContent(parsedContent);
-          setMark(String(parsedContent.total_marks ?? "0"));
-          setDuration(String(parsedContent.time ?? "0"));
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
           showAlert({
@@ -184,21 +181,9 @@ const ViewExam: React.FC = () => {
           });
           return;
         }
-      } else if (typeof content === "object" && content !== null) {
-        const parsedContent = content as ExamContent;
-      
-        if (!parsedContent.parts || !Array.isArray(parsedContent.parts)) {
-          console.error("Missing or invalid parts in exam content");
-          showAlert({
-            type: "failure",
-            message: "Invalid exam format",
-          });
-          return;
-        }
-      
-        setExamContent(parsedContent);
-        setMark(String(parsedContent.total_marks ?? "0"));
-        setDuration(String(parsedContent.time ?? "0"));
+      } else if (typeof content === "object") {
+        console.log("is object");
+        setExamContent(content); // Set directly if already an object
       } else {
         console.error("Unexpected examContent format:", typeof content);
         showAlert({
@@ -208,14 +193,12 @@ const ViewExam: React.FC = () => {
         return;
       }
 
-
-
       setGrade(response.examClass || "");
       setSubject(response.examSubject || "");
       setSemester(response.examSemester || "");
       setCreator(response.createdBy || "");
       setDate(response.creationDate || "");
-      setContributors(String(response.contributors || ""));
+      setContributers(String(response.contributors || ""));
       setDuration(response.examDuration || "");
       setMark(response.examMark || "");
       setExamState(response.examState || "");
@@ -841,7 +824,7 @@ const ViewExam: React.FC = () => {
                   textOverflow: "ellipsis", // Adds ellipsis when content overflows
                 }}
               >
-                {contributors}
+                {contributers}
               </div>
             </div>
           </div>
