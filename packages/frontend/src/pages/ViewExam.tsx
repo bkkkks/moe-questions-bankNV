@@ -153,23 +153,22 @@ const ViewExam: React.FC = () => {
 
       console.log("Initial Data Loaded:", response);
 
-      type ExamContent = {
-        total_marks?: number;
-        time?: string;
-        [key: string]: any;
-      };
+
 
       if (typeof content === "string") {
         try {
           const cleaned = content.trim();
           const jsonStart = cleaned.indexOf("{");
           const cleanJson = cleaned.slice(jsonStart).trim();
-          const parsedContent = JSON.parse(cleanJson) as ExamContent;
-
+          const parsedContent: ExamContent = JSON.parse(cleanJson);
+      
+          if (!parsedContent.parts || !Array.isArray(parsedContent.parts)) {
+            throw new Error("Missing or invalid parts in exam content");
+          }
       
           setExamContent(parsedContent);
-          setMark(parsedContent.total_marks);
-          setDuration(parsedContent.time);
+          setMark(String(parsedContent.total_marks ?? "0"));
+          setDuration(String(parsedContent.time ?? "0"));
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
           showAlert({
@@ -178,12 +177,21 @@ const ViewExam: React.FC = () => {
           });
           return;
         }
-      } else if (typeof content === "object") {
+      } else if (typeof content === "object" && content !== null) {
         const parsedContent = content as ExamContent;
-        
-        setExamContent(content);
-        setMark(content.total_marks);
-        setDuration(content.time);
+      
+        if (!parsedContent.parts || !Array.isArray(parsedContent.parts)) {
+          console.error("Missing or invalid parts in exam content");
+          showAlert({
+            type: "failure",
+            message: "Invalid exam format",
+          });
+          return;
+        }
+      
+        setExamContent(parsedContent);
+        setMark(String(parsedContent.total_marks ?? "0"));
+        setDuration(String(parsedContent.time ?? "0"));
       } else {
         console.error("Unexpected examContent format:", typeof content);
         showAlert({
@@ -192,6 +200,7 @@ const ViewExam: React.FC = () => {
         });
         return;
       }
+
 
 
       setGrade(response.examClass || "");
