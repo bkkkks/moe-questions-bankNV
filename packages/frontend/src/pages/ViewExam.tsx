@@ -153,6 +153,12 @@ const ViewExam: React.FC = () => {
 
       console.log("Initial Data Loaded:", response);
 
+      type ExamContent = {
+        total_marks?: number;
+        time?: string;
+        [key: string]: any;
+      };
+
       if (typeof content === "string") {
         try {
           const cleaned = content.trim();
