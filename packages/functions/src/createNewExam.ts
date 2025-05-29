@@ -129,23 +129,26 @@ export async function createExam(event) {
       //const responseText = response.output.message.content[0].text;
       //console.log("Updated Exam Content:", responseText);
       const fullText = response.output.message.content[0].text;
-
-      // نحاول نلقط أول { ونشيل أي مقدمة غير مرغوب فيها
-      const jsonStart = fullText.indexOf("{");
-      if (jsonStart === -1) {
-        throw new Error("❌ Failed to extract JSON: No opening brace found");
+      
+      // حدد أول `{` وآخر `}`
+      const jsonStart = fullText.indexOf('{');
+      const jsonEnd = fullText.lastIndexOf('}');
+      
+      if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+        throw new Error("❌ Failed to extract JSON: Missing or invalid braces");
       }
       
-      const cleanedJson = fullText.slice(jsonStart).trim();
+      // استخرج النص بين الأقواس
+      const cleanedJson = fullText.slice(jsonStart, jsonEnd + 1).trim();
       
-      // نتأكد إنّه JSON صحيح قبل ما نخزنه
       let parsed;
       try {
         parsed = JSON.parse(cleanedJson);
       } catch (err) {
-        console.error("❌ Invalid JSON returned from model:", fullText);
+        console.error("❌ Invalid JSON returned from model:", cleanedJson);
         throw new Error("Returned content is not valid JSON");
       }
+
 
 
       await dynamo.send(
