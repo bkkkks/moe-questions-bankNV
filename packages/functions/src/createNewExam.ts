@@ -126,8 +126,27 @@ export async function createExam(event) {
       const response = await bedrockClient.send(command);
 
       //@ts-ignore
-      const responseText = response.output.message.content[0].text;
-      console.log("Updated Exam Content:", responseText);
+      //const responseText = response.output.message.content[0].text;
+      //console.log("Updated Exam Content:", responseText);
+      const fullText = response.output.message.content[0].text;
+
+      // نحاول نلقط أول { ونشيل أي مقدمة غير مرغوب فيها
+      const jsonStart = fullText.indexOf("{");
+      if (jsonStart === -1) {
+        throw new Error("❌ Failed to extract JSON: No opening brace found");
+      }
+      
+      const cleanedJson = fullText.slice(jsonStart).trim();
+      
+      // نتأكد إنّه JSON صحيح قبل ما نخزنه
+      let parsed;
+      try {
+        parsed = JSON.parse(cleanedJson);
+      } catch (err) {
+        console.error("❌ Invalid JSON returned from model:", fullText);
+        throw new Error("Returned content is not valid JSON");
+      }
+
 
       await dynamo.send(
         new UpdateCommand({
@@ -137,7 +156,7 @@ export async function createExam(event) {
             "SET examContent = :examContent, numOfRegenerations = if_not_exists(numOfRegenerations, :zero) + :incr, contributors = :contributors",
             
           ExpressionAttributeValues: {
-            ":examContent": responseText,
+            ":examContent": cleanedJson,
             ":incr": 1,
             ":zero": 0,
             ":contributors": data.contributors,
@@ -148,7 +167,7 @@ export async function createExam(event) {
 
     //const response = await bedrockClient.send(command);
 
-      body = { message: "Exam successfully regenerated", newExamContent: responseText };
+      body = { message: "Exam successfully regenerated", newExamContent: cleanedJson };
     } catch (error) {
       console.error("Error regenerating exam:", error);
       statusCode = 500;
@@ -206,7 +225,7 @@ export async function createExam(event) {
 
     console.log("Prompt built");
 
-    let responseText = "";
+    let cleanedJson = "";
     
     try {
       const response = await bedrockClient.send(command);
@@ -217,9 +236,9 @@ export async function createExam(event) {
         throw new Error("Invalid response from Bedrock model – missing content");
       }
     
-      responseText = content[0].text;
+      cleanedJson = content[0].text;
     
-      console.log("Response from Bedrock:", responseText);
+      console.log("Response from Bedrock:", cleanedJson);
     } catch (error) {
       console.error("Bedrock model error:", error);
       statusCode = 500;
@@ -234,7 +253,7 @@ export async function createExam(event) {
 
     console.log("Model done");
     //@ts-ignore
-    console.log("ResponseText size:", Buffer.byteLength(responseText, "utf-8"));
+    console.log("cleanedJson size:", Buffer.byteLength(cleanedJson, "utf-8"));
 
       const uuid = uuidv4();
       await dynamo.send(
@@ -248,7 +267,7 @@ export async function createExam(event) {
             examSemester: data.semester,
             examDuration: data.duration,
             examMark: data.total_mark,
-            examContent: responseText,
+            examContent: cleanedJson,
             createdBy: data.created_by,
             creationDate: data.creation_date,
             contributors: data.contributors,
