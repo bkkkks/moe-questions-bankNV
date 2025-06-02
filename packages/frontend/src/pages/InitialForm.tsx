@@ -64,11 +64,21 @@ export function InitialForm() {
       console.log("Function URL:", functionURL);
 
       //@ts-ignore
-      const response = await invokeLambda({
+     // const response = await invokeLambda({
+       // method: "POST",
+       // body: payload,
+       // url: functionURL,
+      //});
+      const apiURL = `${import.meta.env.VITE_API_URL}/createNewExam`; 
+
+      const response = await fetch(apiURL, {
         method: "POST",
-        body: payload,
-        url: functionURL,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
+
 
 
       if (!response.ok) {
