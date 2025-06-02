@@ -73,7 +73,7 @@ export function InitialForm() {
 
       const response = await invokeLambda({
         method: "POST",
-        body: requestBody,
+        body: payload,
         url: apiURL,
       });
 
