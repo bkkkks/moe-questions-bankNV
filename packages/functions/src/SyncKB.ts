@@ -15,8 +15,8 @@ export async function handler(event: any) {
  
   // Define the input for the StartIngestionJobCommand
   const input = {
-    knowledgeBaseId: "WCTC0NYEAV"; // Knowledge Base ID
-    dataSourceId: "YPKLO8CFFH"; // Data Source ID
+    knowledgeBaseId: knowledgeBaseId, // Knowledge Base ID
+    dataSourceId: dataSourceId,
     clientToken: uuidv4() // Unique client token
     description: "Syncing knowledge base data from S3", // Description of the ingestion job
   };
