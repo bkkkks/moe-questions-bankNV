@@ -184,7 +184,7 @@ const ExamForm: React.FC = () => {
         return;
       }
 
-      if (response.examSubject !== "ARAB101") {
+      //if (response.examSubject !== "ARAB101") {
 
         let parsedContent;
         try {
@@ -206,7 +206,7 @@ const ExamForm: React.FC = () => {
           });
           return;
         }
-      }
+     
       
         setExamContent(parsedContent);
         console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
