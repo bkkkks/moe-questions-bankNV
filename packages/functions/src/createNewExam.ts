@@ -189,7 +189,7 @@ export async function createExam(event) {
            knowledgeBaseId: knowledgeBaseId ?? "WCTC0NYEAV", //Add ur KB ID...
           retrievalConfiguration: {
             vectorSearchConfiguration: {
-              numberOfResults: 1,
+              numberOfResults: 10,
             },
           },
           retrievalQuery: {
