@@ -23,9 +23,9 @@ const client = new DynamoDBClient({
 
 const dynamo = DynamoDBDocumentClient.from(client);
 
-const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
+const bedrockClient = new BedrockRuntimeClient({ region: "us-west-2" });
 
-const modelId = "eu:anthropic.claude-3-5-sonnet-20241022-v2:0";
+const modelId = "anthropic.claude-3-5-sonnet-20241022-v2:0";
 
 export async function createExam(event) {
   console.log("📩 createExam triggered", JSON.stringify(event));
