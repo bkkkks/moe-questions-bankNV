@@ -81,8 +81,8 @@ export function InitialForm() {
 
       if (!response.ok) {
         showAlert({
-          type: "failure",
-          message: "Failed to generate exam",
+          type: "info", // was failure
+          message: "⏳ الامتحان قيد الإنشاء... سيتم عرضه في قائمة الامتحانات خلال لحظات.", //was Failed to generate exam
         })
         setLoading(false);
         return;
@@ -102,8 +102,8 @@ export function InitialForm() {
     } catch (error) {
       console.error("Error submitting form:", error);
       showAlert({
-        type: "failure",
-        message: "Failed to generate exam",
+        type: "info", //was failure
+        message: "⏳ الامتحان قيد الإنشاء... سيتم عرضه بعد قليل في قائمة الامتحانات.", // was Failed to generate exam
       });
       setLoading(false);
     }
