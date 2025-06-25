@@ -1,16 +1,17 @@
-import { StackContext, Api, use, Queue } from "sst/constructs";
+import { StackContext, Queue, Function as SSTFunction, use, Api } from "sst/constructs";
 import { DBStack } from "./DBStack";
 import { BedrockKbLambdaStack } from "./bedrockstack";
 
 export function FunctionsStack({ stack }: StackContext) {
+  // ✅ استخدام DynamoDB و Bedrock من Stacks ثانية
   const { exams_table } = use(DBStack);
   const bedrockKb = use(BedrockKbLambdaStack);
 
-  // 1️⃣: أنشئ SQS Queue واربطها بـ consumer Lambda
+  // ✅ إنشاء SQS Queue تربط مباشرة بـ Lambda createNewExam
   const examQueue = new Queue(stack, "ExamQueue", {
     consumer: {
       function: {
-        handler: "packages/functions/src/consumer.handler",
+        handler: "packages/functions/src/createNewExam.handler", // Lambda الحالية
         environment: {
           TABLE_NAME: exams_table.tableName,
           KNOWLEDGE_BASE_ID: bedrockKb.knowledgeBaseId,
@@ -20,30 +21,30 @@ export function FunctionsStack({ stack }: StackContext) {
     },
   });
 
-  // 2️⃣: أنشئ REST API
+  // ✅ Lambda جديدة ترسل الطلب إلى SQS (Producer)
+  const producer = new SSTFunction(stack, "ExamProducer", {
+    handler: "packages/functions/src/producer.handler",
+    environment: {
+      QUEUE_URL: examQueue.queue.queueUrl,
+    },
+    permissions: [examQueue],
+  });
+
+  // ✅ تعريف API فقط إذا تبغى تربط producer بمسار HTTP
   const api = new Api(stack, "ExamApi", {
     cors: true,
     routes: {
-      "POST /createNewExam": "packages/functions/src/createNewExam.createExam",
+      "POST /generateExam": producer,
     },
   });
 
-  // 3️⃣: خذ Lambda الحالية واربطها بالـ Queue
-  const createExamFunction = api.getFunction("POST", "/createNewExam");
-
-  createExamFunction?.bind([exams_table]);
-  createExamFunction?.addEnvironment("TABLE_NAME", exams_table.tableName);
-  createExamFunction?.addEnvironment("QUEUE_URL", examQueue.queue.queueUrl);
-  createExamFunction?.attachPermissions([examQueue]);
-
-  // 4️⃣: Export API URLs
   stack.addOutputs({
     ApiEndpoint: api.url,
-    CreateExamEndpoint: api.url + "/createNewExam",
+    GenerateExamEndpoint: api.url + "/generateExam",
   });
 
   return {
     api,
-    createExamFunction,
+    producer,
   };
 }
