@@ -91,8 +91,7 @@ export function InitialForm() {
       console.log("API Response:", response);
       console.log("Type of response content:", typeof response);
 
-      console.log(response.body);
-
+      //console.log(response.body);
       //const data = await response.json();
      // console.log(data);
 
