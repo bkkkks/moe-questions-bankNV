@@ -51,26 +51,34 @@ export default async function invokeLambda({
 
   body = body ? JSON.stringify(body) : body;
 
-  try {
-    const response = await aws.fetch(url, {
-      method: method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: body,
-    });
+try {
+  const response = await aws.fetch(url, {
+    method: method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body,
+  });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Error response body:", errorText);
-      throw new Error(`API call failed: ${errorText}`);
-    }
-
-    
-    return response;
-  } catch (error) {
-    throw new Error(
-      `Failed to parse response as JSON: ${(error as Error).message}`
-    );
-  }
+  return {
+    ok: response.ok,
+    status: response.status,
+    json: async () => {
+      try {
+        return await response.json();
+      } catch {
+        return null;
+      }
+    },
+    text: async () => await response.text(),
+  };
+} catch (error) {
+  console.error("invokeLambda fetch error:", error);
+  return {
+    ok: false,
+    status: 500,
+    json: async () => null,
+    text: async () => (error as Error).message,
+  };
+}
 }
