@@ -41,6 +41,7 @@ export default async function invokeLambda({
   //       sessionToken: sessionToken,
   //     },
   //   });
+  //
 
   const aws = new AwsClient({
     accessKeyId: accessKeyId,
