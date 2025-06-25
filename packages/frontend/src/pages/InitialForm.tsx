@@ -93,8 +93,21 @@ export function InitialForm() {
 
       console.log(response.body);
 
+      //const data = await response.json();
+     // console.log(data);
+
       const data = await response.json();
 
+      if (!data) {
+        console.warn("Failed to parse JSON response or empty body");
+        showAlert({
+          type: "info",
+          message: "⏳ الامتحان قيد الإنشاء... سيتم عرضه بعد قليل في قائمة الامتحانات.",
+        });
+        setLoading(false);
+        return;
+      }
+      
       console.log(data);
 
       const examID = data.examID;
