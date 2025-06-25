@@ -25,7 +25,7 @@ export function FunctionsStack({ stack }: StackContext) {
   const producer = new SSTFunction(stack, "ExamProducer", {
     handler: "packages/functions/src/producer.handler",
     environment: {
-      QUEUE_URL: examQueue.queue.queueUrl,
+      QUEUE_URL: examQueue.queueUrl,
     },
     permissions: [examQueue],
   });
