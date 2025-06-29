@@ -8,7 +8,7 @@ export async function handler(event: any) {
 
   const command = new SendMessageCommand({
     QueueUrl: QUEUE_URL,
-    MessageBody: JSON.stringify(body),
+    MessageBody: JSON.stringify(event.body),
   });
 
   await sqs.send(command);
