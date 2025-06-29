@@ -5,6 +5,8 @@ import { DBStack } from "./DBStack"
 import { StorageStack } from "./StorageStack";
 import s3 from "aws-cdk-lib/aws-s3";
 import { MyStack } from "./OpenSearchStack"; // Import the OpenSearch stack
+import { FunctionsStack } from "./FunctionsStack";
+
 
 
 export function ApiStack({ stack }: StackContext) {
