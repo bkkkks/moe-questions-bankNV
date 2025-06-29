@@ -47,5 +47,6 @@ export function FunctionsStack({ stack }: StackContext) {
   return {
     api,
     producer,
+    examQueue,
   };
 }
