@@ -130,6 +130,19 @@ export function ApiStack({ stack }: StackContext) {
         },
       },
 
+      "POST /queueExam": {
+        function: {
+          handler: "packages/functions/src/producer.handler",
+          runtime: "nodejs20.x",
+          timeout: 60,
+          permissions: ["sqs"],
+          environment: {
+            QUEUE_URL: examQueue.queueUrl,
+          },
+        },
+      },
+
+
       "POST /sendForApproval": {
         function: {
           handler: "packages/functions/src/sendExamForApproval.sendForApproval",
