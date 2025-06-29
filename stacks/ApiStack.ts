@@ -9,6 +9,7 @@ import { MyStack } from "./OpenSearchStack"; // Import the OpenSearch stack
 
 export function ApiStack({ stack }: StackContext) {
   const { collectionEndpoint } = use(MyStack); // Retrieve the OpenSearch endpoint
+  const { examQueue } = use(FunctionsStack);
 
   const topic = new Topic(stack, "Report");
   const userTopic = new Topic(stack, "UserTopic");
