@@ -21,6 +21,7 @@ export function FunctionsStack({ stack }: StackContext) {
     },
   });
 
+  
   // ✅ Lambda جديدة ترسل الطلب إلى SQS (Producer)
   const producer = new SSTFunction(stack, "ExamProducer", {
     handler: "packages/functions/src/producer.handler",
