@@ -46,7 +46,7 @@ export function InitialForm() {
         setLoading(false);
         return;
       }
-      const examID = uuidv4();
+      let examID = uuidv4();
       const payload = {
         examID,
         class: grade,
