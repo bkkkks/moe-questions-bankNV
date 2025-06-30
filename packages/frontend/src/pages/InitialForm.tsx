@@ -6,7 +6,7 @@ import invokeLambda from "../lib/invokeLambda.ts";
 import { useAlert } from "../components/AlertComponent.tsx";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
 import { v4 as uuidv4 } from "uuid";
-import { fetchExamById } from "../lib/db.ts"; // أو حسب مكان الدالة
+
 
 
 export function InitialForm() {
