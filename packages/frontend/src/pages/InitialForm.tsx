@@ -131,6 +131,7 @@ export function InitialForm() {
         console.error("Polling error:", err);
       }
     }, 5000);
+    }
 
 
 
