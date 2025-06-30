@@ -112,7 +112,7 @@ export function InitialForm() {
       
       console.log(data);
 
-      const examID = data.examID;
+      examID = data.examID;
       navigate("/dashboard/examForm/" + examID);
     } catch (error) {
       console.error("Error submitting form:", error);
