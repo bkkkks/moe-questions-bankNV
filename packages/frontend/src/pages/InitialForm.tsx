@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import invokeLambda from "../lib/invokeLambda.ts";
 import { useAlert } from "../components/AlertComponent.tsx";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
+import { v4 as uuidv4 } from "uuid";
+
 
 export function InitialForm() {
   const [grade, setGrade] = useState("Grade 10");
@@ -44,8 +46,9 @@ export function InitialForm() {
         setLoading(false);
         return;
       }
-      
+      const examID = data.examID;
       const payload = {
+        examID,
         class: grade,
         subject: subject,
         semester: semester,
