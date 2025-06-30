@@ -69,7 +69,7 @@ export function InitialForm() {
        // body: payload,
        // url: functionURL,
       //});
-      const apiURL = `${import.meta.env.VITE_API_URL}/createNewExam`;
+      const apiURL = `${import.meta.env.VITE_API_URL}/queueExam`;
 
       const response = await invokeLambda({
         method: "POST",
