@@ -113,26 +113,20 @@ export function InitialForm() {
       
       console.log(data);
 
-      examID = data.examID;
+     
       //navigate("/dashboard/examForm/" + examID);
       
-      
-    const poll = setInterval(async () => {
-      try {
-        const exam = await fetchExamById(examID);
-    
-        // شرط: إذا examContent موجود أو examState صار READY
-        if (exam?.examContent || (exam?.examState === "READY")) {
-          clearInterval(poll);
-          navigate("/dashboard/examForm/" + examID);
-        }
-    
-      } catch (err) {
-        console.error("Polling error:", err);
-      }
-    }, 5000);
+      examID = data.examID;
+      navigate("/dashboard/examForm/" + examID);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      showAlert({
+        type: "info", //was failure
+        message: "⏳ الامتحان قيد الإنشاء... سيتم عرضه بعد قليل في قائمة الامتحانات.", // was Failed to generate exam
+      });
+      setLoading(false);
     }
-
+  };
 
 
   return (
