@@ -117,19 +117,21 @@ export function InitialForm() {
       //navigate("/dashboard/examForm/" + examID);
       
       
-      // Poll كل 5 ثواني عشان ننتظر examContent من Lambda الثانية
-      const poll = setInterval(async () => {
-        try {
-          const exam = await fetchExamById(examID);
-          if (exam?.examContent) {
-            clearInterval(poll);
-            navigate("/dashboard/examForm/" + examID);
-          }
-        } catch (err) {
-          console.error("Polling error:", err);
-          // ممكن تضيف منبه أو توقف المحاولات بعد عدد معين
+    const poll = setInterval(async () => {
+      try {
+        const exam = await fetchExamById(examID);
+    
+        // شرط: إذا examContent موجود أو examState صار READY
+        if (exam?.examContent || (exam?.examState === "READY")) {
+          clearInterval(poll);
+          navigate("/dashboard/examForm/" + examID);
         }
-      }, 5000);
+    
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 5000);
+
 
 
   return (
