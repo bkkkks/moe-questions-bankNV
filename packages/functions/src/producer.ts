@@ -4,17 +4,33 @@ const sqs = new SQSClient({});
 const QUEUE_URL = process.env.QUEUE_URL!;
 
 export async function handler(event: any) {
-  const body = JSON.parse(event.body);
+  try {
+    const body = JSON.parse(event.body);
 
-  const command = new SendMessageCommand({
-    QueueUrl: QUEUE_URL,
-    MessageBody: JSON.stringify(event.body),
-  });
+    // تأكد إن فيه examID
+    if (!body.examID) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing examID in request" }),
+      };
+    }
 
-  await sqs.send(command);
+    const command = new SendMessageCommand({
+      QueueUrl: QUEUE_URL,
+      MessageBody: JSON.stringify(body),
+    });
 
-  return {
-    statusCode: 202,
-    body: JSON.stringify({ message: "Exam creation request queued." }),
-  };
+    await sqs.send(command);
+
+    return {
+      statusCode: 202,
+      body: JSON.stringify({ message: "Exam creation request queued.", examID: body.examID }),
+    };
+  } catch (err) {
+    console.error("Error in producer:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Failed to send message to queue" }),
+    };
+  }
 }
