@@ -6,6 +6,7 @@ import invokeLambda from "../lib/invokeLambda.ts";
 import { useAlert } from "../components/AlertComponent.tsx";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
 import { v4 as uuidv4 } from "uuid";
+import { fetchExamById } from "../lib/db.ts"; // أو حسب مكان الدالة
 
 
 export function InitialForm() {
@@ -113,16 +114,23 @@ export function InitialForm() {
       console.log(data);
 
       examID = data.examID;
-      navigate("/dashboard/examForm/" + examID);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      showAlert({
-        type: "info", //was failure
-        message: "⏳ الامتحان قيد الإنشاء... سيتم عرضه بعد قليل في قائمة الامتحانات.", // was Failed to generate exam
-      });
-      setLoading(false);
-    }
-  };
+      //navigate("/dashboard/examForm/" + examID);
+      
+      
+      // Poll كل 5 ثواني عشان ننتظر examContent من Lambda الثانية
+      const poll = setInterval(async () => {
+        try {
+          const exam = await fetchExamById(examID);
+          if (exam?.examContent) {
+            clearInterval(poll);
+            navigate("/dashboard/examForm/" + examID);
+          }
+        } catch (err) {
+          console.error("Polling error:", err);
+          // ممكن تضيف منبه أو توقف المحاولات بعد عدد معين
+        }
+      }, 5000);
+
 
   return (
     <div
