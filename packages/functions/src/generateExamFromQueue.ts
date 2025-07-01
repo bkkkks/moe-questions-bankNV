@@ -18,6 +18,7 @@ const client = new DynamoDBClient({
   region: "us-east-1",
   maxAttempts: 5,
 });
+
 const dynamo = DynamoDBDocumentClient.from(client);
 const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
 const modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0";
