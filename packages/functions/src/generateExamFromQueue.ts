@@ -221,12 +221,13 @@ async function createExam(event: any, tableName: string, knowledgeBaseId: string
         };
       }
 
-      const uuid = uuidv4();
+      const record = JSON.parse(event.Records[0].body);
+      const examID = record.examID;
       await dynamo.send(
         new PutCommand({
           TableName: tableName,
           Item: {
-            examID: uuid,
+            examID,
             examState: "building",
             examClass: data.class,
             examSubject: data.subject,
