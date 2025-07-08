@@ -349,7 +349,7 @@ const ExamForm: React.FC = () => {
         //},
         //body: JSON.stringify(requestBody),
       const token = await getUserToken(currentUser);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/createNewExam`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/queueExam`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
