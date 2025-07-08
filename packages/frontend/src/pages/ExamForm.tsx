@@ -103,6 +103,30 @@ const ExamForm: React.FC = () => {
 
       const content = response.examContent;
 
+
+       if (typeof content === "string") {
+          try {
+            const parsedContent = JSON.parse(content);
+            setExamContent(parsedContent);
+          } catch (parseError) {
+            console.error("Failed to parse exam content as JSON:", content);
+            showAlert({
+              type:"failure",
+              message: "Invalid exam format"
+            })
+            return;
+          }
+        } else if (typeof content === "object") {
+          setExamContent(content); // Set directly if already an object
+        } else {
+          console.error("Unexpected examContent format:", typeof content);
+          showAlert({
+            type: "failure",
+            message: "Invalid exam format",
+          });
+          return;
+        }
+/*
       // if (response.examSubject !== "ARAB101") {
         // Parse examContent if it's a string
         if (typeof content === "string") {
@@ -138,7 +162,7 @@ const ExamForm: React.FC = () => {
       // } else {
       //   setExamContent(content);
       // }
-
+*/
       // Set metadata fields
       setGrade(response.examClass || "");
       setSubject(response.examSubject || "");
