@@ -17,7 +17,9 @@ export function FunctionsStack({ stack }: StackContext) {
   const examQueue = new Queue(stack, "ExamQueue", {
     consumer: {
       function: {
-        handler: "packages/functions/src/generateExamFromQueue.handler",
+        handler: "packages/functions/src/createNewExam.createExam",
+        createNewExam.createExam
+        //  /generateExamFromQueue.handler
         environment: {
           TABLE_NAME: exams_table.tableName,
           KNOWLEDGE_BASE_ID: bedrockKb.knowledgeBaseId,
