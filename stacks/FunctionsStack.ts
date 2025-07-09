@@ -18,7 +18,7 @@ export function FunctionsStack({ stack }: StackContext) {
     consumer: {
       function: {
         handler: "packages/functions/src/createNewExam.createExam",
-        createNewExam.createExam
+        
         //  /generateExamFromQueue.handler
         environment: {
           TABLE_NAME: exams_table.tableName,
