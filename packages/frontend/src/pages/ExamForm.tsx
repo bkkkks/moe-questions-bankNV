@@ -79,10 +79,10 @@ const ExamForm: React.FC = () => {
 
   
 
-
+/*
 
   // Fetch Initial Data
-  /* const fetchInitialData = async () => {
+   const fetchInitialData = async () => {
     try {
       //@ts-ignore
       const response = await invokeApig({
@@ -161,59 +161,58 @@ const ExamForm: React.FC = () => {
         }
       // } else {
       //   setExamContent(content);
-      // }*/
+      // }
+        */
+      
 
-      const pollExamStatus = async () => {
-        let attempts = 0;
-        const maxAttempts = 6;
-        const delay = 10000;
-      
-        while (attempts < maxAttempts) {
-          try {
-            //@ts-ignore
-            const response = await invokeApig({
-              path: `/examForm/${id}`,
-              method: "GET",
-            });
-      
-            console.log("📥 Polling response:", response);
-      
-            if (response && response.examState === "building" && response.examContent) {
-              // ✅ تحديث examContent
-              if (typeof response.examContent === "string") {
-                const jsonStart = response.examContent.indexOf("{");
-                const jsonEnd = response.examContent.lastIndexOf("}");
-                const jsonString = response.examContent.slice(jsonStart, jsonEnd + 1).trim();
-                const parsed = JSON.parse(jsonString);
-                setExamContent(parsed);
-              } else {
-                setExamContent(response.examContent);
-              }
-      
-              // ✅ تحديث metadata
-              setGrade(response.examClass || "");
-              setSubject(response.examSubject || "");
-              setSemester(response.examSemester || "");
-              setCreator(response.createdBy || "");
-              setDate(response.creationDate || "");
-              setContributers(String(response.contributors || ""));
-              setDuration(response.examDuration || "");
-              setMark(response.examMark || "");
-              setExamState(response.examState || "");
-      
-              return;
-            }
-          } catch (error) {
-            console.error("❌ Polling error:", error);
+     const pollExamStatus = async () => {
+    let attempts = 0;
+    const maxAttempts = 6;
+    const delay = 10000;
+  
+    while (attempts < maxAttempts) {
+      try {
+        //@ts-ignore
+        const response = await invokeApig({
+          path: `/examForm/${id}`,
+          method: "GET",
+        });
+  
+        console.log("📥 Polling response:", response);
+  
+        if (response && response.examState === "building" && response.examContent) {
+          if (typeof response.examContent === "string") {
+            const jsonStart = response.examContent.indexOf("{");
+            const jsonEnd = response.examContent.lastIndexOf("}");
+            const jsonString = response.examContent.slice(jsonStart, jsonEnd + 1).trim();
+            const parsed = JSON.parse(jsonString);
+            setExamContent(parsed);
+          } else {
+            setExamContent(response.examContent);
           }
-      
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          attempts++;
+  
+          setGrade(response.examClass || "");
+          setSubject(response.examSubject || "");
+          setSemester(response.examSemester || "");
+          setCreator(response.createdBy || "");
+          setDate(response.creationDate || "");
+          setContributers(String(response.contributors || ""));
+          setDuration(response.examDuration || "");
+          setMark(response.examMark || "");
+          setExamState(response.examState || "");
+  
+          return;
         }
-      
-        showAlert({ type: "failure", message: "Exam generation timed out." });
-      };
-
+      } catch (error) {
+        console.error("❌ Polling error:", error);
+      }
+  
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      attempts++;
+    }
+  
+    showAlert({ type: "failure", message: "Exam generation timed out." });
+  };
   
       // Set metadata fields
       setGrade(response.examClass || "");
