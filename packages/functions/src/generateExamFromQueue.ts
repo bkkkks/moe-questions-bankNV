@@ -4,8 +4,8 @@ import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { BedrockRuntimeClient, ConverseCommand } from '@aws-sdk/client-bedrock-runtime';
 import { BedrockAgentRuntimeClient, RetrieveCommand } from '@aws-sdk/client-bedrock-agent-runtime';
 
-import { ENG102PROMPT } from './promptsEng102';
-import { ARAB101PROMPT } from './promptsArab101';
+import { ENG102PROMPT } from "./prompts/Eng102";
+import { ARAB101PROMPT } from "./prompts/Arab101";
 
 const region = 'us-east-1';
 
