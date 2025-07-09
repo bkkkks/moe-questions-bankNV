@@ -14,7 +14,7 @@ const dynamo = DynamoDBDocumentClient.from(client);
 const bedrockClient = new BedrockRuntimeClient({ region });
 const bedrockAgentClient = new BedrockAgentRuntimeClient({ region });
 
-const modelId = 'anthropic.claude-3-5-sonnet-20240620-v1:0';
+const modelId = 'anthropic.claude-3-5-sonnet-20240620-v1:0'; // ✅ نموذج صالح ومفعل
 
 export async function handler(event: any) {
   console.log("📩 generateExamFromQueue triggered", JSON.stringify(event));
@@ -38,20 +38,21 @@ export async function handler(event: any) {
   const data = JSON.parse(bodyStr);
   console.log("📦 Received exam creation request:", data);
 
-  // 🔄 Generate examID if not provided
   const examID = data.examID || uuidv4();
-
   let prompt = '';
 
   try {
     if (data.subject === 'ARAB101') {
       prompt = ARAB101PROMPT;
+      console.log("🧠 Using ARAB101 static prompt.");
     } else {
+      console.log("📚 Retrieving knowledge base content...");
+
       const retrieveCommand = new RetrieveCommand({
         knowledgeBaseId,
         retrievalConfiguration: {
           vectorSearchConfiguration: {
-            numberOfResults: 10,
+            numberOfResults: 5, // أقل = أسرع
           },
         },
         retrievalQuery: {
@@ -65,11 +66,13 @@ export async function handler(event: any) {
         relevant_info = results.retrievalResults
           .map((e: any) => e.content.text)
           .join('\n');
+        console.log("📚 Retrieved info:", relevant_info.slice(0, 200)); // طباعة أول 200 حرف
       }
 
       prompt = ENG102PROMPT + `\nRefer to the following relevant information from past exams:\n` + relevant_info;
     }
 
+    console.log("🧠 Sending prompt to Bedrock...");
     const command = new ConverseCommand({
       modelId,
       messages: [{ role: 'user', content: [{ text: prompt }] }],
@@ -80,45 +83,45 @@ export async function handler(event: any) {
     const content = response.output.message.content;
 
     if (!content || !content[0].text) {
-      throw new Error("❌ Invalid response from Bedrock model – missing content");
+      throw new Error("❌ Invalid response from Bedrock – missing content");
     }
 
     const fullText = content[0].text;
+    console.log("🧾 Bedrock raw output:", fullText.slice(0, 300)); // أول 300 حرف
+
     const jsonStart = fullText.indexOf('{');
     const jsonEnd = fullText.lastIndexOf('}');
 
     if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
-      throw new Error("❌ Failed to extract JSON – Missing or invalid braces");
+      throw new Error("❌ Failed to extract JSON from Bedrock output");
     }
 
     const cleanedJson = fullText.slice(jsonStart, jsonEnd + 1).trim();
+    const parsedContent = JSON.parse(cleanedJson); // ✅ تصحيح رئيسي: تخزين كـ Object
 
-    // ✅ Save to DynamoDB
-    await dynamo.send(
-      new PutCommand({
-        TableName: tableName,
-        Item: {
-          examID,
-          examState: 'building',
-          examClass: data.class,
-          examSubject: data.subject,
-          examSemester: data.semester,
-          examDuration: data.duration,
-          examMark: data.total_mark,
-          examContent: cleanedJson,
-          createdBy: data.created_by,
-          creationDate: data.creation_date,
-          contributors: data.contributors,
-          numOfRegenerations: 0,
-        },
-        // Uncomment this to protect against overwriting
-        // ConditionExpression: 'attribute_not_exists(examID)',
-      })
-    );
+    console.log("✅ Parsed exam content:", parsedContent);
 
-    console.log("✅ Exam saved:", examID);
+    console.log("💾 Saving to DynamoDB...");
+    await dynamo.send(new PutCommand({
+      TableName: tableName,
+      Item: {
+        examID,
+        examState: 'building',
+        examClass: data.class,
+        examSubject: data.subject,
+        examSemester: data.semester,
+        examDuration: data.duration,
+        examMark: data.total_mark,
+        examContent: parsedContent, // ✅ يتم تخزينه كمجال كائن Map وليس نص
+        createdBy: data.created_by,
+        creationDate: data.creation_date,
+        contributors: data.contributors,
+        numOfRegenerations: 0,
+      }
+    }));
+
+    console.log("✅ Exam saved successfully:", examID);
   } catch (error) {
-    console.error("❌ Error creating exam:", error);
-    return;
+    console.error("❌ Error during exam creation:", error);
   }
 }
