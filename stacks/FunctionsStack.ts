@@ -17,7 +17,7 @@ export function FunctionsStack({ stack }: StackContext) {
   const examQueue = new Queue(stack, "ExamQueue", {
     consumer: {
       function: {
-        handler: "packages/functions/src/createNewExam.createExam",
+        handler: "packages/functions/src/generateExamFromQueue.handler",
         
         //  /generateExamFromQueue.handler
         environment: {
