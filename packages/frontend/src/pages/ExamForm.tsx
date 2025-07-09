@@ -81,7 +81,7 @@ const ExamForm: React.FC = () => {
 
 /*
 
-  // Fetch Initial Data
+   Fetch Initial Data
    const fetchInitialData = async () => {
     try {
       //@ts-ignore
@@ -126,12 +126,12 @@ const ExamForm: React.FC = () => {
           });
           return;
         }
-/*
-      // if (response.examSubject !== "ARAB101") {
-        // Parse examContent if it's a string
+
+       if (response.examSubject !== "ARAB101") {
+         Parse examContent if it's a string
         if (typeof content === "string") {
           try {
-            //const parsedContent = JSON.parse(content);
+            const parsedContent = JSON.parse(content);
             let cleaned = content.trim();
             if (cleaned.startsWith("```json")) {
               cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
@@ -159,9 +159,9 @@ const ExamForm: React.FC = () => {
           });
           return;
         }
-      // } else {
-      //   setExamContent(content);
-      // }
+       } else {
+         setExamContent(content);
+       }
         */
       
 
