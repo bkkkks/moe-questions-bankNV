@@ -14,7 +14,7 @@ const dynamo = DynamoDBDocumentClient.from(client);
 const bedrockClient = new BedrockRuntimeClient({ region });
 const bedrockAgentClient = new BedrockAgentRuntimeClient({ region });
 
-const modelId = 'anthropic.claude-3-5-sonnet-20240620-v1';
+const modelId = 'anthropic.claude-3-sonnet-20240229-v1';
 
 export async function handler(event: any) {
   console.log("📩 generateExamFromQueue triggered", JSON.stringify(event));
