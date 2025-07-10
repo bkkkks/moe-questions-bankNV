@@ -80,77 +80,6 @@ const ExamForm: React.FC = () => {
   
 
 
-
-   //Fetch Initial Data
-const fetchInitialData = async () => {
-    try {
-      //@ts-ignore
-      const response = await invokeApig({
-        path: `/examForm/${id}`,
-        method: "GET",
-      });
-  
-      if (!response || Object.keys(response).length === 0) {
-        console.error("Response is empty or undefined:", response);
-        showAlert({
-          type: "failure",
-          message: "Invalid exam format",
-        });
-        return;
-      }
-  
-      console.log("Initial Data Loaded:", response);
-  
-      // إذا الامتحان تحت البناء (في وضع الإنشاء)، ابدأ polling وانتظر الجاهزية
-      if (response.examState === "building") {
-        pollExamStatus(); // ⬅️ هنا تنادي دالة التحديث المتكرر
-        return;
-      }
-  
-      // تحليل محتوى الامتحان
-      const content = response.examContent;
-      if (typeof content === "string") {
-        const jsonStart = content.indexOf("{");
-        const jsonEnd = content.lastIndexOf("}");
-        const jsonString = content.slice(jsonStart, jsonEnd + 1).trim();
-        const parsed = JSON.parse(jsonString);
-        setExamContent(parsed);
-      } else if (typeof content === "object") {
-        setExamContent(content);
-      } else {
-        console.error("Unexpected examContent format:", typeof content);
-        showAlert({ type: "failure", message: "Invalid exam format" });
-        return;
-      }
-  
-      // تعيين البيانات الجانبية
-      setGrade(response.examClass || "");
-      setSubject(response.examSubject || "");
-      setSemester(response.examSemester || "");
-      setCreator(response.createdBy || "");
-      setDate(response.creationDate || "");
-      setContributers(String(response.contributors || ""));
-      setDuration(response.examDuration || "");
-      setMark(response.examMark || "");
-      setExamState(response.examState || "");
-  
-      // إذا الامتحان مش بحالة بناء، يتم توجيه المستخدم مباشرة للعرض
-      if (response.examState !== "building") {
-        navigate(`/dashboard/viewExam/${id}`);
-      }
-  
-    } catch (err: any) {
-      console.error("Error fetching initial data:", err);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
-    } finally {
-      setLoadingPage(false); // تم الانتهاء من التحميل
-    }
-  };
-
-
 const pollExamStatus = async () => {
   let attempts = 0;
   const maxAttempts = 6;
@@ -206,54 +135,55 @@ const pollExamStatus = async () => {
 
 
 const fetchInitialData = async () => {
-    try {
-      //@ts-ignore
-      const response = await invokeApig({
-        path: `/examForm/${id}`,
-        method: "GET",
-      });
-  
-      if (!response || Object.keys(response).length === 0) {
-        console.error("Response is empty or undefined:", response);
-        showAlert({
-          type: "failure",
-          message: "Invalid exam format",
-        });
-        return;
-      }
-  
-      console.log("Initial Data Loaded:", response);
-  
-      // ⛔️ إذا الامتحان مو في حالة building، حول المستخدم مباشرة لعرض الامتحان
-      if (response.examState !== "building") {
-        navigate(`/dashboard/viewExam/${id}`);
-        return;
-      }
-  
-      // ✅ حالة الامتحان building، نبدأ polling
-      pollExamStatus();
-  
-      // تعبئة بيانات الميتا الأولية
-      setGrade(response.examClass || "");
-      setSubject(response.examSubject || "");
-      setSemester(response.examSemester || "");
-      setCreator(response.createdBy || "");
-      setDate(response.creationDate || "");
-      setContributers(String(response.contributors || ""));
-      setDuration(response.examDuration || "");
-      setMark(response.examMark || "");
-      setExamState(response.examState || "");
-  
-    } catch (err: any) {
-      console.error("Error fetching initial data:", err);
+  try {
+    //@ts-ignore
+    const response = await invokeApig({
+      path: `/examForm/${id}`,
+      method: "GET",
+    });
+
+    if (!response || Object.keys(response).length === 0) {
+      console.error("Response is empty or undefined:", response);
       showAlert({
         type: "failure",
-        message: "Failed to load",
+        message: "Invalid exam format",
       });
-    } finally {
-      setLoadingPage(false);
+      return;
     }
-  };
+
+    console.log("Initial Data Loaded:", response);
+
+    // ⛔️ إذا الامتحان مو في حالة building، حول المستخدم مباشرة لعرض الامتحان
+    if (response.examState !== "building") {
+      navigate(`/dashboard/viewExam/${id}`);
+      return;
+    }
+
+    // ✅ حالة الامتحان building، نبدأ polling
+    pollExamStatus();
+
+    // تعبئة بيانات الميتا الأولية
+    setGrade(response.examClass || "");
+    setSubject(response.examSubject || "");
+    setSemester(response.examSemester || "");
+    setCreator(response.createdBy || "");
+    setDate(response.creationDate || "");
+    setContributers(String(response.contributors || ""));
+    setDuration(response.examDuration || "");
+    setMark(response.examMark || "");
+    setExamState(response.examState || "");
+
+  } catch (err: any) {
+    console.error("Error fetching initial data:", err);
+    showAlert({
+      type: "failure",
+      message: "Failed to load",
+    });
+  } finally {
+    setLoadingPage(false);
+  }
+};
+
 
     return () => {
       clearTimeout(timer);
