@@ -55,7 +55,7 @@ const ExamForm: React.FC = () => {
   const [contributers, setContributers] = useState("");
   const [examState, setExamState] = useState("");
   const [_responseResult, _setResponseResult] = useState<string>(""); // State to store the API response
-  //const [examContent, setExamContent] = useState<any>(null); // Store exam content as JSON
+  const [examContent, setExamContent] = useState<any>(null); // Store exam content as JSON
   const [examContent, setExamContent] = useState<ExamContent | null>(null);
   const [_editMode, _setEditMode] = useState(false); // Toggle edit mode
   const [_editedContent, _setEditedContent] = useState<Record<string, any>>({});
@@ -163,7 +163,7 @@ const ExamForm: React.FC = () => {
          setExamContent(content);
        }
         */
-      
+};
 
      const pollExamStatus = async () => {
         let attempts = 0;
