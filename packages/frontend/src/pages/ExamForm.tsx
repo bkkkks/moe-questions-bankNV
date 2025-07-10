@@ -191,7 +191,60 @@ const fetchInitialData = async () => {
     };
   }, [id]);
 
+ const fetchExamContent = async () => {
+    try {
+      //@ts-ignore
+      const response = await invokeApig({
+        path: `/examForm/${id}`,
+        method: "GET",
+      });
 
+      console.log("Raw Exam Content from Backend:", response.examContent);
+
+      if (!response.examContent) {
+        showAlert({
+          type: "failure",
+          message: "Failed to load",
+        });
+        return;
+      }
+
+      // if (response.examSubject !== "ARAB101") {
+
+        let parsedContent;
+        try {
+          // Extract the JSON portion from the descriptive text
+          const jsonStartIndex = response.examContent.indexOf("{");
+          const jsonEndIndex = response.examContent.lastIndexOf("}");
+          if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+            const jsonString = response.examContent.substring(jsonStartIndex, jsonEndIndex + 1).trim();
+            console.log("Extracted JSON String:", jsonString);
+            parsedContent = JSON.parse(jsonString); // Parse the JSON object
+          } else {
+            throw new Error("No valid JSON found in examContent string.");
+          }
+        } catch (error) {
+          console.error("Failed to parse exam content as JSON:", response.examContent);
+          showAlert({
+            type: "failure",
+            message: "Invalid exam format",
+          });
+          return;
+        }
+      
+        setExamContent(parsedContent);
+        console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
+    } catch (error) {
+      console.error("Error fetching exam content:", error);
+      showAlert({
+        type: "failure",
+        message: "Failed to load",
+      });
+    }
+  };
+
+
+  useEffect(() => {
     const loadExamContent = async () => {
       try {
         await fetchExamContent(); // Fetch and parse content
