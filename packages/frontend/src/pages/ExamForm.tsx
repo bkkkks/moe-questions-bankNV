@@ -192,6 +192,48 @@ const fetchInitialData = async () => {
   }, [id]);
 
 
+    const loadExamContent = async () => {
+      try {
+        await fetchExamContent(); // Fetch and parse content
+      } catch (err) {
+        console.error("Error loading exam content:", err);
+        showAlert({
+          type: "failure",
+          message: "Failed to load",
+        });
+      }
+    };
+    loadExamContent();
+  }, [id]);
+  
+ 
+  useEffect(() => {
+    let isCancelled = false;
+  
+    const timer = setTimeout(async () => {
+      try {
+        if (!isCancelled) {
+          await fetchInitialData();
+        }
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+        if (!isCancelled) {
+          showAlert({
+            type: "failure",
+            message: "Failed to load",
+          });
+        }
+      }
+    }, 2000); // 2-second delay
+  
+    
+    return () => {
+      clearTimeout(timer);
+      isCancelled = true;
+    };
+  }, [id]);
+
+
 
   const sendForApproval = async () => {
     setLoadingApproval(true);
