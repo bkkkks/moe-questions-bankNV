@@ -185,11 +185,7 @@ const pollExamStatus = async () => {
   };
   
   
-      return () => {
-        clearTimeout(timer);
-        isCancelled = true;
-      };
-    }, [id]);
+
 
    const fetchExamContent = async () => {
       try {
