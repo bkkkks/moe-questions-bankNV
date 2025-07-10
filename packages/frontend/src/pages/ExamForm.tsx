@@ -151,56 +151,89 @@ const fetchInitialData = async () => {
   };
 
 
-     const pollExamStatus = async () => {
-        let attempts = 0;
-        const maxAttempts = 6;
-        const delay = 10000;
-      
-        while (attempts < maxAttempts) {
-          try {
-            //@ts-ignore
-            const response = await invokeApig({
-              path: `/examForm/${id}`,
-              method: "GET",
-            });
-      
-            console.log("📥 Polling response:", response);
-      
-            if (response && response.examState === "building" && response.examContent) {
-              if (typeof response.examContent === "string") {
-                const jsonStart = response.examContent.indexOf("{");
-                const jsonEnd = response.examContent.lastIndexOf("}");
-                const jsonString = response.examContent.slice(jsonStart, jsonEnd + 1).trim();
-                const parsed = JSON.parse(jsonString);
-                setExamContent(parsed);
-              } else {
-                setExamContent(response.examContent);
-              }
-      
-              setGrade(response.examClass || "");
-              setSubject(response.examSubject || "");
-              setSemester(response.examSemester || "");
-              setCreator(response.createdBy || "");
-              setDate(response.creationDate || "");
-              setContributers(String(response.contributors || ""));
-              setDuration(response.examDuration || "");
-              setMark(response.examMark || "");
-              setExamState(response.examState || "");
-      
-              return;
-            }
-          } catch (error) {
-            console.error("❌ Polling error:", error);
-          }
-      
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          attempts++;
+const pollExamStatus = async () => {
+  let attempts = 0;
+  const maxAttempts = 6;
+  const delay = 10000;
+
+  while (attempts < maxAttempts) {
+    try {
+      //@ts-ignore
+      const response = await invokeApig({
+        path: `/examForm/${id}`,
+        method: "GET",
+      });
+
+      console.log("📥 Polling response:", response);
+
+      if (response && response.examState === "building" && response.examContent) {
+        const content = response.examContent;
+
+        if (typeof content === "string") {
+          const jsonStart = content.indexOf("{");
+          const jsonEnd = content.lastIndexOf("}");
+          const jsonString = content.slice(jsonStart, jsonEnd + 1).trim();
+          const parsed = JSON.parse(jsonString);
+          setExamContent(parsed);
+        } else if (typeof content === "object") {
+          setExamContent(content);
         }
-      
-        showAlert({ type: "failure", message: "Exam generation timed out." });
-      };
+
+        // تحديث بيانات الميتا
+        setGrade(response.examClass || "");
+        setSubject(response.examSubject || "");
+        setSemester(response.examSemester || "");
+        setCreator(response.createdBy || "");
+        setDate(response.creationDate || "");
+        setContributers(String(response.contributors || ""));
+        setDuration(response.examDuration || "");
+        setMark(response.examMark || "");
+        setExamState(response.examState || "");
+
+        return; // وقف التكرار بعد النجاح
+      }
+    } catch (error) {
+      console.error("❌ Polling error:", error);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    attempts++;
+  }
+
+  showAlert({ type: "failure", message: "Exam generation timed out." });
+};
+
+
+
+const fetchInitialData = async () => {
+    try {
+      //@ts-ignore
+      const response = await invokeApig({
+        path: `/examForm/${id}`,
+        method: "GET",
+      });
   
-      // Set metadata fields
+      if (!response || Object.keys(response).length === 0) {
+        console.error("Response is empty or undefined:", response);
+        showAlert({
+          type: "failure",
+          message: "Invalid exam format",
+        });
+        return;
+      }
+  
+      console.log("Initial Data Loaded:", response);
+  
+      // ⛔️ إذا الامتحان مو في حالة building، حول المستخدم مباشرة لعرض الامتحان
+      if (response.examState !== "building") {
+        navigate(`/dashboard/viewExam/${id}`);
+        return;
+      }
+  
+      // ✅ حالة الامتحان building، نبدأ polling
+      pollExamStatus();
+  
+      // تعبئة بيانات الميتا الأولية
       setGrade(response.examClass || "");
       setSubject(response.examSubject || "");
       setSemester(response.examSemester || "");
@@ -210,11 +243,7 @@ const fetchInitialData = async () => {
       setDuration(response.examDuration || "");
       setMark(response.examMark || "");
       setExamState(response.examState || "");
-
-      // Redirect if exam is not in "building" state
-      if (response.examState !== "building") {
-        navigate(`/dashboard/viewExam/${id}`);
-      }
+  
     } catch (err: any) {
       console.error("Error fetching initial data:", err);
       showAlert({
@@ -222,101 +251,10 @@ const fetchInitialData = async () => {
         message: "Failed to load",
       });
     } finally {
-      setLoadingPage(false); // Mark loading as complete
+      setLoadingPage(false);
     }
   };
 
-
-  const fetchExamContent = async () => {
-    try {
-      //@ts-ignore
-      const response = await invokeApig({
-        path: `/examForm/${id}`,
-        method: "GET",
-      });
-
-      console.log("Raw Exam Content from Backend:", response.examContent);
-
-      if (!response.examContent) {
-        showAlert({
-          type: "failure",
-          message: "Failed to load",
-        });
-        return;
-      }
-
-      //if (response.examSubject !== "ARAB101") {
-
-        let parsedContent;
-        try {
-          // Extract the JSON portion from the descriptive text
-          const jsonStartIndex = response.examContent.indexOf("{");
-          const jsonEndIndex = response.examContent.lastIndexOf("}");
-          if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-            const jsonString = response.examContent.substring(jsonStartIndex, jsonEndIndex + 1).trim();
-            console.log("Extracted JSON String:", jsonString);
-            parsedContent = JSON.parse(jsonString); // Parse the JSON object
-          } else {
-            throw new Error("No valid JSON found in examContent string.");
-          }
-        } catch (error) {
-          console.error("Failed to parse exam content as JSON:", response.examContent);
-          showAlert({
-            type: "failure",
-            message: "Invalid exam format",
-          });
-          return;
-        }
-     
-      
-        setExamContent(parsedContent);
-        console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
-    } catch (error) {
-      console.error("Error fetching exam content:", error);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
-    }
-  };
-
-
-  useEffect(() => {
-    const loadExamContent = async () => {
-      try {
-        await fetchExamContent(); // Fetch and parse content
-      } catch (err) {
-        console.error("Error loading exam content:", err);
-        showAlert({
-          type: "failure",
-          message: "Failed to load",
-        });
-      }
-    };
-    loadExamContent();
-  }, [id]);
-  
- 
-  useEffect(() => {
-    let isCancelled = false;
-  
-    const timer = setTimeout(async () => {
-      try {
-        if (!isCancelled) {
-          await fetchInitialData();
-        }
-      } catch (error) {
-        console.error("Error fetching initial data:", error);
-        if (!isCancelled) {
-          showAlert({
-            type: "failure",
-            message: "Failed to load",
-          });
-        }
-      }
-    }, 2000); // 2-second delay
-  
-    
     return () => {
       clearTimeout(timer);
       isCancelled = true;
