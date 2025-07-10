@@ -187,7 +187,7 @@ const pollExamStatus = async () => {
   
 
 
-   const fetchExamContent = async () => {
+  /* const fetchExamContent = async () => {
       try {
         //@ts-ignore
         const response = await invokeApig({
@@ -281,7 +281,7 @@ const pollExamStatus = async () => {
       isCancelled = true;
     };
   }, [id]);
-
+*/
 
 
   const sendForApproval = async () => {
