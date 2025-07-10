@@ -79,9 +79,9 @@ const ExamForm: React.FC = () => {
 
   
 
-/*
 
-   Fetch Initial Data
+
+   //Fetch Initial Data
    const fetchInitialData = async () => {
     try {
       //@ts-ignore
@@ -162,7 +162,7 @@ const ExamForm: React.FC = () => {
        } else {
          setExamContent(content);
        }
-  */
+  
 };
 
      const pollExamStatus = async () => {
