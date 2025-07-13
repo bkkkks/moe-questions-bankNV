@@ -233,7 +233,10 @@ const pollExamStatus = async () => {
     } finally {
       setLoadingPage(false);
     }
-  };
+  };  
+  useEffect(() => {
+  fetchInitialData();
+}, [id]);
 
 
 
