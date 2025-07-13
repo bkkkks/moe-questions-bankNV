@@ -134,7 +134,7 @@ const pollExamStatus = async () => {
 
 
 
-  const fetchInitialData = async () => {
+  /*const fetchInitialData = async () => {
     try {
       //@ts-ignore
       const response = await invokeApig({
@@ -187,7 +187,54 @@ const pollExamStatus = async () => {
   fetchInitialData();
 }, [id]);
   
+  */
+
+  const fetchInitialData = async () => {
+    try {
+      //@ts-ignore
+      const response = await invokeApig({
+        path: `/examForm/${id}`,
+        method: "GET",
+      });
   
+      console.log("Initial Data Loaded:", response);
+  
+      const state = response?.examState;
+  
+      // ✅ لو الحالة building أو in_progress نبدأ polling حتى لو البيانات ناقصة
+      if (state === "building" || state === "in_progress") {
+        showAlert({
+          type: "info",
+          message: "جاري إنشاء الامتحان...",
+        });
+  
+        pollExamStatus(); // نبدأ التكرار لجلب البيانات لاحقًا
+        return;
+      }
+  
+      // ✅ إذا الحالة غير building أو in_progress، نحول مباشرة
+      if (state && state !== "building" && state !== "in_progress") {
+        navigate(`/dashboard/viewExam/${id}`);
+        return;
+      }
+  
+      // ❌ إذا لا توجد حالة ولا بيانات، نظهر خطأ
+      showAlert({
+        type: "failure",
+        message: "فشل تحميل الامتحان",
+      });
+  
+    } catch (err: any) {
+      console.error("Error fetching initial data:", err);
+      showAlert({
+        type: "failure",
+        message: "حدث خطأ أثناء تحميل البيانات",
+      });
+    } finally {
+      setLoadingPage(false);
+    }
+  };
+
 
 
   /* const fetchExamContent = async () => {
