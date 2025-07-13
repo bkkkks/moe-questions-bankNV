@@ -77,10 +77,7 @@ const ExamForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-  useEffect(() => {
-  fetchInitialData();
-  }, [id]);
-  
+
 
 
 const pollExamStatus = async () => {
@@ -186,6 +183,9 @@ const pollExamStatus = async () => {
       setLoadingPage(false);
     }
   };
+  useEffect(() => {
+  fetchInitialData();
+}, [id]);
   
   
 
