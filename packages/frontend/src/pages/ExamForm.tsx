@@ -134,60 +134,7 @@ const pollExamStatus = async () => {
 
 
 
-  /*const fetchInitialData = async () => {
-    try {
-      //@ts-ignore
-      const response = await invokeApig({
-        path: `/examForm/${id}`,
-        method: "GET",
-      });
-  
-      if (!response || Object.keys(response).length === 0) {
-        console.error("Response is empty or undefined:", response);
-        showAlert({
-          type: "failure",
-          message: "Invalid exam format",
-        });
-        return;
-      }
-  
-      console.log("Initial Data Loaded:", response);
-  
-      // ⛔️ إذا الامتحان مو في حالة building، حول المستخدم مباشرة لعرض الامتحان
-      if (response.examState !== "building") {
-        navigate(`/dashboard/viewExam/${id}`);
-        return;
-      }
-  
-      // ✅ حالة الامتحان building، نبدأ polling
-      pollExamStatus();
-  
-      // تعبئة بيانات الميتا الأولية
-      setGrade(response.examClass || "");
-      setSubject(response.examSubject || "");
-      setSemester(response.examSemester || "");
-      setCreator(response.createdBy || "");
-      setDate(response.creationDate || "");
-      setContributers(String(response.contributors || ""));
-      setDuration(response.examDuration || "");
-      setMark(response.examMark || "");
-      setExamState(response.examState || "");
-  
-    } catch (err: any) {
-      console.error("Error fetching initial data:", err);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
-    } finally {
-      setLoadingPage(false);
-    }
-  };
-  useEffect(() => {
-  fetchInitialData();
-}, [id]);
-  
-  */
+
 
   const fetchInitialData = async () => {
     try {
