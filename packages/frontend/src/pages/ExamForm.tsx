@@ -82,8 +82,8 @@ const ExamForm: React.FC = () => {
 
 const pollExamStatus = async () => {
   let attempts = 0;
-  const maxAttempts = 6;
-  const delay = 100000000;
+  const maxAttempts = 30; // 30 * 5 = 150 ثانية
+  const delay = 5000;
 
   while (attempts < maxAttempts) {
     try {
@@ -95,7 +95,8 @@ const pollExamStatus = async () => {
 
       console.log("📥 Polling response:", response);
 
-      if (response && response.examState === "building" && response.examContent) {
+      if (response && response.examContent && response.examState !== "building") {
+        // ✅ تم بناء الامتحان
         const content = response.examContent;
 
         if (typeof content === "string") {
@@ -108,7 +109,6 @@ const pollExamStatus = async () => {
           setExamContent(content);
         }
 
-        // تحديث بيانات الميتا
         setGrade(response.examClass || "");
         setSubject(response.examSubject || "");
         setSemester(response.examSemester || "");
@@ -119,7 +119,9 @@ const pollExamStatus = async () => {
         setMark(response.examMark || "");
         setExamState(response.examState || "");
 
-        return; // وقف التكرار بعد النجاح
+        // ✅ نروح لصفحة العرض
+        navigate(`/dashboard/viewExam/${id}`);
+        return;
       }
     } catch (error) {
       console.error("❌ Polling error:", error);
@@ -129,7 +131,7 @@ const pollExamStatus = async () => {
     attempts++;
   }
 
-  showAlert({ type: "failure", message: "Exam generation timed out." });
+  showAlert({ type: "failure", message: "⛔️ Exam generation timed out." });
 };
 
 
