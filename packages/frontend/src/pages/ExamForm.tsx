@@ -82,8 +82,8 @@ const ExamForm: React.FC = () => {
 
 const pollExamStatus = async () => {
   let attempts = 0;
-  const maxAttempts = 30; // 30 * 5 = 150 ثانية
-  const delay = 5000;
+  const maxAttempts = 350; // 30 * 5 = 150 ثانية
+  const delay = 50000;
 
   while (attempts < maxAttempts) {
     try {
