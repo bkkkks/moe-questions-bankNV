@@ -151,10 +151,15 @@ const fetchInitialData = async () => {
     const state = response?.examState;
 
     if (!state || state === "building" || state === "in_progress") {
-      showAlert({
-        type: "info",
-        message: "جاري إنشاء الامتحان...",
-      });
+    showAlert({
+      type: "info",
+      message: (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span className="spinner" /> جاري إنشاء الامتحان...
+        </div>
+      ),
+    });
+
 
       pollExamStatus(); // Start polling regardless of content
       return;
