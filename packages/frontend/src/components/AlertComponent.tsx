@@ -96,9 +96,20 @@ export const Notification = () => {
 
   // Dynamically set the style class based on type
   const notificationClass =
-        alertConfig.type === "success" ? "alert-success" : "alert-failure";
+      alertConfig.type === "success"
+        ? "alert-success"
+        : alertConfig.type === "progress"
+        ? "alert-progress"
+        : "alert-failure";
+
     
-    const icon = alertConfig.type === "success" ? "✅" : "❌";
+    const icon =
+      alertConfig.type === "success"
+        ? "✅"
+        : alertConfig.type === "progress"
+        ? "⏳"
+        : "❌";
+
 
   return (
     <div className="alert-overlay">
