@@ -153,11 +153,7 @@ const fetchInitialData = async () => {
     if (!state || state === "building" || state === "in_progress") {
     showAlert({
       type: "info",
-      message: (
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span className="spinner" /> جاري إنشاء الامتحان...
-        </div>
-      ),
+      message: "🔄 جاري إنشاء الامتحان...",
     });
 
 
