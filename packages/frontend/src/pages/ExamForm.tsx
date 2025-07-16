@@ -146,42 +146,71 @@ const fetchInitialData = async () => {
       method: "GET",
     });
 
-    console.log("Initial Data Loaded:", response);
+    console.log("📥 Initial Data Loaded:", response);
 
     const state = response?.examState;
 
     if (!state || state === "building" || state === "in_progress") {
-    showAlert({
-      type: "progress",
-      message: "🔄 جاري إنشاء الامتحان...",
-    });
+      showAlert({
+        type: "progress",
+        message: "🔄 Generating the exam...",
+      });
 
-
-      pollExamStatus(); // Start polling regardless of content
+      pollExamStatus(); // Begin polling
       return;
     }
 
-    // If exam already ready, redirect
     if (state && state !== "building" && state !== "in_progress") {
-      navigate(`/dashboard/viewExam/${id}`);
+      const content = response.examContent;
+
+      if (!content) {
+        showAlert({
+          type: "failure",
+          message: "Exam content is missing",
+        });
+        return;
+      }
+
+      try {
+        const jsonStartIndex = content.indexOf("{");
+        const jsonEndIndex = content.lastIndexOf("}");
+
+        if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+          const jsonString = content.substring(jsonStartIndex, jsonEndIndex + 1).trim();
+          const parsedContent = JSON.parse(jsonString);
+          setExamContent(parsedContent);
+          console.log("✅ Parsed Exam Content:", parsedContent);
+        } else {
+          throw new Error("No valid JSON found in examContent.");
+        }
+      } catch (error) {
+        console.error("❌ Failed to parse exam content:", content);
+        showAlert({
+          type: "failure",
+          message: "Invalid exam format",
+        });
+        return;
+      }
+
       return;
     }
 
     showAlert({
       type: "failure",
-      message: "فشل تحميل الامتحان",
+      message: "Failed to load the exam",
     });
 
   } catch (err: any) {
-    console.error("Error fetching initial data:", err);
+    console.error("❌ Error fetching initial data:", err);
     showAlert({
       type: "failure",
-      message: "حدث خطأ أثناء تحميل البيانات",
+      message: "An error occurred while loading the exam",
     });
   } finally {
     setLoadingPage(false);
   }
 };
+
  
   useEffect(() => {
   fetchInitialData();
