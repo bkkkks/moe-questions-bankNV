@@ -101,8 +101,22 @@ const fetchInitialData = async () => {
 
     console.log("📦 Initial Data Loaded:", response);
 
-    const content = response.examContent;
+    const state = response.examState;
 
+    // ✅ لو الامتحان للحين ما تجهز
+    if (!state || state === "building" || state === "in_progress") {
+      showAlert({
+        type: "progress",
+        message: "🔄 جاري إنشاء الامتحان...",
+      });
+
+      // ✅ إعادة المحاولة بعد 10 ثواني
+      setTimeout(fetchInitialData, 10000);
+      return;
+    }
+
+    // ✅ إذا الامتحان جاهز، نبدأ نقرأ examContent
+    const content = response.examContent;
     let parsedContent;
 
     if (typeof content === "object") {
@@ -110,8 +124,6 @@ const fetchInitialData = async () => {
     } else if (typeof content === "string") {
       try {
         let cleaned = content.trim();
-
-        // Remove markdown wrapper if exists
         if (cleaned.startsWith("```json")) {
           cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
         }
@@ -156,8 +168,8 @@ const fetchInitialData = async () => {
     setMark(response.examMark || "");
     setExamState(response.examState || "");
 
-    // Redirect if exam is already built
-    if (response.examState !== "building") {
+    // ✅ إذا الامتحان جاهز، روح صفحة العرض
+    if (state !== "building" && state !== "in_progress") {
       navigate(`/dashboard/viewExam/${id}`);
     }
 
@@ -171,6 +183,7 @@ const fetchInitialData = async () => {
     setLoadingPage(false);
   }
 };
+
 
 
 
