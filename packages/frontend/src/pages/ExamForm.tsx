@@ -252,7 +252,7 @@ const fetchInitialData = async () => {
       });
     }
   };
-*/
+
 
   useEffect(() => {
     const loadExamContent = async () => {
@@ -269,7 +269,7 @@ const fetchInitialData = async () => {
     loadExamContent();
   }, [id]);
   
- 
+ */
   useEffect(() => {
     let isCancelled = false;
   
