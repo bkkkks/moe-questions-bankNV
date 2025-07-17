@@ -218,7 +218,7 @@ const fetchInitialData = async () => {
 
 
 
-  /* const fetchExamContent = async () => {
+  const fetchExamContent = async () => {
       try {
         //@ts-ignore
         const response = await invokeApig({
@@ -312,7 +312,7 @@ const fetchInitialData = async () => {
       isCancelled = true;
     };
   }, [id]);
-*/
+
 
 
   const sendForApproval = async () => {
