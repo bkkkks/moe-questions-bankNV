@@ -80,6 +80,7 @@ const ExamForm: React.FC = () => {
   
 
 
+  let hasNavigated = false;
 
   // Fetch Initial Data
 const fetchInitialData = async () => {
@@ -106,14 +107,18 @@ const fetchInitialData = async () => {
     const state = response.examState;
 
     // ✅ لو الامتحان للحين ما تجهز
-    if (response.examState === "building" || response.examState === "in_progress") {
-      showAlert({
-        type: "progress",
-        message: "🔄 جاري إنشاء الامتحان...",
-      });
-      setTimeout(fetchInitialData, 10000);
-      return;
-    }
+  if ((response.examState === "building" || response.examState === "in_progress") && !hasNavigated) {
+    showAlert({
+      type: "progress",
+      message: "🔄 جاري إنشاء الامتحان...",
+    });
+  
+    setTimeout(() => {
+      if (!hasNavigated) fetchInitialData();
+    }, 10000);
+    return;
+  }
+
 
 
     // ✅ إذا الامتحان جاهز، نبدأ نقرأ examContent
@@ -170,9 +175,11 @@ const fetchInitialData = async () => {
     setExamState(response.examState || "");
 
     // ✅ إذا الامتحان جاهز، روح صفحة العرض
-    if (state !== "building" && state !== "in_progress") {
-      navigate(`/dashboard/viewExam/${id}`);
-    }
+  if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
+    hasNavigated = true;
+    navigate(`/dashboard/viewExam/${id}`);
+  }
+
 
   } catch (err) {
     console.error("❌ Error fetching initial data:", err);
