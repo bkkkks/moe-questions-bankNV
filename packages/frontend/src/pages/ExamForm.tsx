@@ -254,7 +254,7 @@ const fetchInitialData = async () => {
   };
 
 
-  useEffect(() => {*/
+  useEffect(() => {
     const loadExamContent = async () => {
       try {
         await fetchExamContent(); // Fetch and parse content
