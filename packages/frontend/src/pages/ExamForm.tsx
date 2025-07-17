@@ -90,30 +90,31 @@ const fetchInitialData = async () => {
       method: "GET",
     });
 
-    if (!response || Object.keys(response).length === 0) {
-      console.error("❌ Empty or invalid response:", response);
-      showAlert({
-        type: "failure",
-        message: "Invalid exam format",
-      });
-      return;
-    }
+  if (!response || Object.keys(response).length === 0 || !response.examState) {
+    console.error("❌ Empty or invalid response:", response);
+    showAlert({
+      type: "progress",
+      message: "🔄 جاري إنشاء الامتحان...",
+    });
+    setTimeout(fetchInitialData, 10000);
+    return;
+  }
+
 
     console.log("📦 Initial Data Loaded:", response);
 
     const state = response.examState;
 
     // ✅ لو الامتحان للحين ما تجهز
-    if (!state || state === "building" || state === "in_progress") {
+    if (response.examState === "building" || response.examState === "in_progress") {
       showAlert({
         type: "progress",
         message: "🔄 جاري إنشاء الامتحان...",
       });
-
-      // ✅ إعادة المحاولة بعد 10 ثواني
       setTimeout(fetchInitialData, 10000);
       return;
     }
+
 
     // ✅ إذا الامتحان جاهز، نبدأ نقرأ examContent
     const content = response.examContent;
