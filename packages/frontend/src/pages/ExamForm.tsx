@@ -126,7 +126,7 @@ const ExamForm: React.FC = () => {
           });
           return;
         }
-/*
+
       // if (response.examSubject !== "ARAB101") {
         // Parse examContent if it's a string
         if (typeof content === "string") {
@@ -159,10 +159,10 @@ const ExamForm: React.FC = () => {
           });
           return;
         }
-      // } else {
-      //   setExamContent(content);
-      // }
-*/
+       } else {
+        setExamContent(content);
+      }
+
       // Set metadata fields
       setGrade(response.examClass || "");
       setSubject(response.examSubject || "");
@@ -373,7 +373,7 @@ const ExamForm: React.FC = () => {
         //},
         //body: JSON.stringify(requestBody),
       const token = await getUserToken(currentUser);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/queueExam`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/createNewExam`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
