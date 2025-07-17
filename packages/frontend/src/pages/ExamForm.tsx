@@ -252,7 +252,7 @@ const fetchInitialData = async () => {
       });
     }
   };
-
+*/
 
   useEffect(() => {
     const loadExamContent = async () => {
