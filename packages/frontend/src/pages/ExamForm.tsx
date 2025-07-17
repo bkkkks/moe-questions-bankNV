@@ -126,7 +126,7 @@ const ExamForm: React.FC = () => {
           });
           return;
         }
-/*
+
       // if (response.examSubject !== "ARAB101") {
         // Parse examContent if it's a string
         if (typeof content === "string") {
@@ -162,7 +162,7 @@ const ExamForm: React.FC = () => {
       // } else {
       //   setExamContent(content);
       // }
-*/
+
       // Set metadata fields
       setGrade(response.examClass || "");
       setSubject(response.examSubject || "");
