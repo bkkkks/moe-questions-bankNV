@@ -254,11 +254,14 @@ const ViewExam: React.FC = () => {
         return;
       }
 
+     const content = response.examContent;
     let parsedContent;
-    const content = response.examContent;
+    
+    console.log("Raw Exam Content from Backend:", content);
+    console.log("Type of content:", typeof content);
     
     if (typeof content === "object") {
-      // Already parsed as object (DynamoDB Map)
+      // ✅ Already parsed correctly from DynamoDB
       parsedContent = content;
     } else if (typeof content === "string") {
       try {
@@ -286,13 +289,10 @@ const ViewExam: React.FC = () => {
       });
       return;
     }
+    
+    setExamContent(parsedContent);
+    console.log("✅ Parsed Exam Content Successfully Set in State:", parsedContent);
 
-
-      setExamContent(parsedContent);
-      console.log(
-        "Parsed Exam Content Successfully Set in State:",
-        parsedContent
-      );
     } catch (error) {
       console.error("Error fetching exam content:", error);
       showAlert({
