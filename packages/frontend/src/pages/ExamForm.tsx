@@ -194,30 +194,42 @@ const fetchInitialData = async () => {
 
       //if (response.examSubject !== "ARAB101") {
 
-        let parsedContent;
-        try {
-          // Extract the JSON portion from the descriptive text
-          const jsonStartIndex = response.examContent.indexOf("{");
-          const jsonEndIndex = response.examContent.lastIndexOf("}");
-          if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-            const jsonString = response.examContent.substring(jsonStartIndex, jsonEndIndex + 1).trim();
-            console.log("Extracted JSON String:", jsonString);
-            parsedContent = JSON.parse(jsonString); // Parse the JSON object
-          } else {
-            throw new Error("No valid JSON found in examContent string.");
-          }
-        } catch (error) {
-          console.error("Failed to parse exam content as JSON:", response.examContent);
-          showAlert({
-            type: "failure",
-            message: "Invalid exam format",
-          });
-          return;
+    let parsedContent;
+    const content = response.examContent;
+    
+    if (typeof content === "object") {
+      // ✅ Already parsed from DynamoDB as object
+      parsedContent = content;
+    } else if (typeof content === "string") {
+      try {
+        const jsonStartIndex = content.indexOf("{");
+        const jsonEndIndex = content.lastIndexOf("}");
+        if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+          const jsonString = content.substring(jsonStartIndex, jsonEndIndex + 1).trim();
+          parsedContent = JSON.parse(jsonString);
+        } else {
+          throw new Error("No valid JSON found in examContent string.");
         }
-     
-      
-        setExamContent(parsedContent);
-        console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
+      } catch (error) {
+        console.error("❌ Failed to parse exam content as JSON:", content);
+        showAlert({
+          type: "failure",
+          message: "Invalid exam format",
+        });
+        return;
+      }
+    } else {
+      console.error("❌ Unexpected examContent type:", typeof content);
+      showAlert({
+        type: "failure",
+        message: "Unsupported exam content format",
+      });
+      return;
+    }
+    
+    setExamContent(parsedContent);
+    console.log("✅ Parsed Exam Content Successfully Set in State:", parsedContent);
+
     } catch (error) {
       console.error("Error fetching exam content:", error);
       showAlert({
