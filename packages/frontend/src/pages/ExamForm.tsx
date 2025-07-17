@@ -82,112 +82,96 @@ const ExamForm: React.FC = () => {
 
 
   // Fetch Initial Data
-  const fetchInitialData = async () => {
-    try {
-      //@ts-ignore
-      const response = await invokeApig({
-        path: `/examForm/${id}`, // Adjust path as needed
-        method: "GET",
-      });
+const fetchInitialData = async () => {
+  try {
+    //@ts-ignore
+    const response = await invokeApig({
+      path: `/examForm/${id}`,
+      method: "GET",
+    });
 
-      if (!response || Object.keys(response).length === 0) {
-        console.error("Response is empty or undefined:", response);
+    if (!response || Object.keys(response).length === 0) {
+      console.error("❌ Empty or invalid response:", response);
+      showAlert({
+        type: "failure",
+        message: "Invalid exam format",
+      });
+      return;
+    }
+
+    console.log("📦 Initial Data Loaded:", response);
+
+    const content = response.examContent;
+
+    let parsedContent;
+
+    if (typeof content === "object") {
+      parsedContent = content;
+    } else if (typeof content === "string") {
+      try {
+        let cleaned = content.trim();
+
+        // Remove markdown wrapper if exists
+        if (cleaned.startsWith("```json")) {
+          cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
+        }
+
+        const jsonStart = cleaned.indexOf("{");
+        const jsonEnd = cleaned.lastIndexOf("}");
+
+        if (jsonStart === -1 || jsonEnd === -1) {
+          throw new Error("No valid JSON boundaries found");
+        }
+
+        const cleanJson = cleaned.substring(jsonStart, jsonEnd + 1);
+        parsedContent = JSON.parse(cleanJson);
+      } catch (parseErr) {
+        console.error("❌ Failed to parse exam content as JSON:", parseErr);
         showAlert({
           type: "failure",
           message: "Invalid exam format",
         });
         return;
       }
-
-      console.log("Initial Data Loaded:", response);
-
-      const content = response.examContent;
-
-
-       if (typeof content === "string") {
-          try {
-            const parsedContent = JSON.parse(content);
-            setExamContent(parsedContent);
-          } catch (parseError) {
-            console.error("Failed to parse exam content as JSON:", content);
-            showAlert({
-              type:"failure",
-              message: "Invalid exam format"
-            })
-            return;
-          }
-        } else if (typeof content === "object") {
-          setExamContent(content); // Set directly if already an object
-        } else {
-          console.error("Unexpected examContent format:", typeof content);
-          showAlert({
-            type: "failure",
-            message: "Invalid exam format",
-          });
-          return;
-        }
-
-      // if (response.examSubject !== "ARAB101") {
-        // Parse examContent if it's a string
-        if (typeof content === "string") {
-          try {
-            //const parsedContent = JSON.parse(content);
-            let cleaned = content.trim();
-            if (cleaned.startsWith("```json")) {
-              cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
-            }
-            const jsonStart = cleaned.indexOf("{");
-            const cleanJson = cleaned.slice(jsonStart).trim();
-            const parsedContent = JSON.parse(cleanJson);
-
-            setExamContent(parsedContent);
-          } catch (parseError) {
-            console.error("Failed to parse exam content as JSON:", content);
-            showAlert({
-              type:"failure",
-              message: "Invalid exam format"
-            })
-            return;
-          }
-        } else if (typeof content === "object") {
-          setExamContent(content); // Set directly if already an object
-        } else {
-          console.error("Unexpected examContent format:", typeof content);
-          showAlert({
-            type: "failure",
-            message: "Invalid exam format",
-          });
-          return;
-        }
-      // } else {
-      //   setExamContent(content);
-      // }
-
-      // Set metadata fields
-      setGrade(response.examClass || "");
-      setSubject(response.examSubject || "");
-      setSemester(response.examSemester || "");
-      setCreator(response.createdBy || "");
-      setDate(response.creationDate || "");
-      setContributers(String(response.contributors || ""));
-      setDuration(response.examDuration || "");
-      setMark(response.examMark || "");
-      setExamState(response.examState || "");
-
-      // Redirect if exam is not in "building" state
-      if (response.examState !== "building") {
-        navigate(`/dashboard/viewExam/${id}`);
-      }
-    } catch (err: any) {
-      console.error("Error fetching initial data:", err);
+    } else {
+      console.error("❌ Unexpected examContent format:", typeof content);
       showAlert({
         type: "failure",
-        message: "Failed to load",
+        message: "Invalid exam format",
       });
-    } finally {
-      setLoadingPage(false); // Mark loading as complete
+      return;
     }
-  };
+
+    setExamContent(parsedContent);
+    console.log("✅ Parsed Exam Content:", parsedContent);
+
+    // Set metadata
+    setGrade(response.examClass || "");
+    setSubject(response.examSubject || "");
+    setSemester(response.examSemester || "");
+    setCreator(response.createdBy || "");
+    setDate(response.creationDate || "");
+    setContributers(String(response.contributors || ""));
+    setDuration(response.examDuration || "");
+    setMark(response.examMark || "");
+    setExamState(response.examState || "");
+
+    // Redirect if exam is already built
+    if (response.examState !== "building") {
+      navigate(`/dashboard/viewExam/${id}`);
+    }
+
+  } catch (err) {
+    console.error("❌ Error fetching initial data:", err);
+    showAlert({
+      type: "failure",
+      message: "Failed to load",
+    });
+  } finally {
+    setLoadingPage(false);
+  }
+};
+
 
 
   const fetchExamContent = async () => {
