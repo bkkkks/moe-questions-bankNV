@@ -254,31 +254,39 @@ const ViewExam: React.FC = () => {
         return;
       }
 
-      let parsedContent;
+    let parsedContent;
+    const content = response.examContent;
+    
+    if (typeof content === "object") {
+      // Already parsed as object (DynamoDB Map)
+      parsedContent = content;
+    } else if (typeof content === "string") {
       try {
-        // Extract the JSON portion from the descriptive text
-        const jsonStartIndex = response.examContent.indexOf("{");
-        const jsonEndIndex = response.examContent.lastIndexOf("}");
-        if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-          const jsonString = response.examContent
-            .substring(jsonStartIndex, jsonEndIndex + 1)
-            .trim();
-          console.log("Extracted JSON String:", jsonString);
-          parsedContent = JSON.parse(jsonString); // Parse the JSON object
-        } else {
-          throw new Error("No valid JSON found in examContent string.");
+        const jsonStart = content.indexOf("{");
+        const jsonEnd = content.lastIndexOf("}");
+        if (jsonStart === -1 || jsonEnd === -1) {
+          throw new Error("Invalid JSON boundaries");
         }
-      } catch (error) {
-        console.error(
-          "Failed to parse exam content as JSON:",
-          response.examContent
-        );
+    
+        const jsonString = content.slice(jsonStart, jsonEnd + 1).trim();
+        parsedContent = JSON.parse(jsonString);
+      } catch (err) {
+        console.error("❌ Failed to parse examContent string:", err);
         showAlert({
           type: "failure",
-          message: "Failed to load",
+          message: "Invalid exam content format",
         });
         return;
       }
+    } else {
+      console.error("❌ Unexpected type of examContent:", typeof content);
+      showAlert({
+        type: "failure",
+        message: "Unsupported exam content format",
+      });
+      return;
+    }
+
 
       setExamContent(parsedContent);
       console.log(
