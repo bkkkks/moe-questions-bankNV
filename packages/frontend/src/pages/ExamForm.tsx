@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import invokeApig from "../lib/callAPI.ts";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -109,19 +109,20 @@ const fetchInitialData = async () => {
     const state = response.examState;
 
     // ✅ لو الامتحان للحين ما تجهز
-if ((response.examState === "building" || response.examState === "in_progress") && !hasNavigated.current) {
-  showAlert({
-    type: "progress",
-    message: "🔄 جاري إنشاء الامتحان...",
-  });
+  if ((response.examState === "building" || response.examState === "in_progress") && !hasNavigated) {
+    showAlert({
+      type: "progress",
+      message: "🔄 جاري إنشاء الامتحان...",
+    });
+  
+    setTimeout(() => {
+      if (!hasNavigated) {
+        fetchInitialData();
+      }
+    }, 10000);
+    return;
+  }
 
-  setTimeout(() => {
-    if (!hasNavigated.current) {
-      fetchInitialData();
-    }
-  }, 10000);
-  return;
-}
 
 
 
@@ -180,10 +181,11 @@ if ((response.examState === "building" || response.examState === "in_progress") 
     setExamState(response.examState || "");
 
     // ✅ إذا الامتحان جاهز، روح صفحة العرض
-  if ((state !== "building" && state !== "in_progress") && !hasNavigated.current) {
-    hasNavigated.current = true;
+  if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
+    setHasNavigated(true);
     navigate(`/dashboard/viewExam/${id}`);
   }
+
 
 
 
