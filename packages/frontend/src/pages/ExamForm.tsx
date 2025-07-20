@@ -80,7 +80,8 @@ const ExamForm: React.FC = () => {
   
 
 
- const hasNavigated = useRef(false);
+ const [hasNavigated, setHasNavigated] = useState(false);
+
 
 
   // Fetch Initial Data
