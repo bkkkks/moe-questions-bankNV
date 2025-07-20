@@ -114,7 +114,6 @@ const fetchInitialData = async () => {
 
     const state = response.examState;
 
-    // ✅ لو الامتحان للحين ما تجهز
     if ((state === "building" || state === "in_progress") && !hasNavigated) {
       showAlert({
         type: "progress",
@@ -126,8 +125,16 @@ const fetchInitialData = async () => {
       return;
     }
 
-    // ✅ إذا الامتحان جاهز، نبدأ نقرأ examContent
+    // ✅ تحقق قبل محاولة القراءة
     const content = response.examContent;
+    if (!content) {
+      console.warn("⚠️ examContent is null, exam is still building...");
+      if (!hasNavigated) {
+        setTimeout(fetchInitialData, 10000);
+      }
+      return;
+    }
+
     let parsedContent;
 
     if (typeof content === "object") {
@@ -179,7 +186,6 @@ const fetchInitialData = async () => {
     setMark(response.examMark || "");
     setExamState(state || "");
 
-    // ✅ إذا الامتحان جاهز، روح صفحة العرض
     if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
       setHasNavigated(true);
       navigate(`/dashboard/viewExam/${id}`);
@@ -197,6 +203,7 @@ const fetchInitialData = async () => {
     setLoadingPage(false);
   }
 };
+
 
 
 
