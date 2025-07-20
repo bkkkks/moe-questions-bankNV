@@ -60,7 +60,12 @@ const ExamForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-  const [hasNavigated, setHasNavigated] = useState(false);
+  
+  const hasNavigatedKey = `hasNavigated-${id}`;
+  const [hasNavigated, setHasNavigated] = useState(
+    localStorage.getItem(hasNavigatedKey) === "true"
+  );
+
 
   // Polling for exam creation status
   const fetchInitialData = async () => {
@@ -145,10 +150,12 @@ const ExamForm: React.FC = () => {
       setMark(response.examMark || "");
 
       // التنقل التلقائي عند اكتمال البناء
-      if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
-        setHasNavigated(true);
-        navigate(`/dashboard/viewExam/${id}`);
-      }
+    if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
+      localStorage.setItem(hasNavigatedKey, "true");
+      setHasNavigated(true);
+      navigate(`/dashboard/viewExam/${id}`);
+    }
+
     } catch (err) {
       showAlert({
         type: "failure",
