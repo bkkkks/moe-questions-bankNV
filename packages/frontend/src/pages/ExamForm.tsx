@@ -86,6 +86,11 @@ const ExamForm: React.FC = () => {
 
   // Fetch Initial Data
 const fetchInitialData = async () => {
+  if (hasNavigated) {
+    console.log("✅ already navigated, skipping polling");
+    return;
+  }
+
   try {
     //@ts-ignore
     const response = await invokeApig({
@@ -93,39 +98,33 @@ const fetchInitialData = async () => {
       method: "GET",
     });
 
-  if (!response || Object.keys(response).length === 0 || !response.examState) {
-    console.error("❌ Empty or invalid response:", response);
-    showAlert({
-      type: "progress",
-      message: "🔄 جاري إنشاء الامتحان...",
-    });
-    setTimeout(fetchInitialData, 10000);
-    return;
-  }
-
+    if (!response || Object.keys(response).length === 0 || !response.examState) {
+      console.error("❌ Empty or invalid response:", response);
+      showAlert({
+        type: "progress",
+        message: "🔄 جاري إنشاء الامتحان...",
+      });
+      if (!hasNavigated) {
+        setTimeout(fetchInitialData, 10000);
+      }
+      return;
+    }
 
     console.log("📦 Initial Data Loaded:", response);
 
     const state = response.examState;
 
     // ✅ لو الامتحان للحين ما تجهز
-  if ((response.examState === "building" || response.examState === "in_progress") && !hasNavigated) {
-    showAlert({
-      type: "progress",
-      message: "🔄 جاري إنشاء الامتحان...",
-    });
-  
-    setTimeout(() => {
+    if ((state === "building" || state === "in_progress") && !hasNavigated) {
+      showAlert({
+        type: "progress",
+        message: "🔄 جاري إنشاء الامتحان...",
+      });
       if (!hasNavigated) {
-        fetchInitialData();
+        setTimeout(fetchInitialData, 10000);
       }
-    }, 10000);
-    return;
-  }
-
-
-
-
+      return;
+    }
 
     // ✅ إذا الامتحان جاهز، نبدأ نقرأ examContent
     const content = response.examContent;
@@ -178,27 +177,27 @@ const fetchInitialData = async () => {
     setContributers(String(response.contributors || ""));
     setDuration(response.examDuration || "");
     setMark(response.examMark || "");
-    setExamState(response.examState || "");
+    setExamState(state || "");
 
     // ✅ إذا الامتحان جاهز، روح صفحة العرض
-  if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
-    setHasNavigated(true);
-    navigate(`/dashboard/viewExam/${id}`);
-  }
-
-
-
+    if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
+      setHasNavigated(true);
+      navigate(`/dashboard/viewExam/${id}`);
+    }
 
   } catch (err) {
     console.error("❌ Error fetching initial data:", err);
-    showAlert({
-      type: "failure",
-      message: "Failed to load",
-    });
+    if (!hasNavigated) {
+      showAlert({
+        type: "failure",
+        message: "Failed to load",
+      });
+    }
   } finally {
     setLoadingPage(false);
   }
 };
+
 
 
 
