@@ -207,7 +207,7 @@ const fetchInitialData = async () => {
 
 
 
-/*
+
 
   const fetchExamContent = async () => {
     try {
@@ -289,7 +289,7 @@ const fetchInitialData = async () => {
     };
     loadExamContent();
   }, [id]);
-  */
+  
   
  
   useEffect(() => {
