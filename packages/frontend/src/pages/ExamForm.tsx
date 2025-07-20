@@ -80,7 +80,8 @@ const ExamForm: React.FC = () => {
   
 
 
-  let hasNavigated = false;
+ const hasNavigated = useRef(false);
+
 
   // Fetch Initial Data
 const fetchInitialData = async () => {
@@ -107,17 +108,20 @@ const fetchInitialData = async () => {
     const state = response.examState;
 
     // ✅ لو الامتحان للحين ما تجهز
-  if ((response.examState === "building" || response.examState === "in_progress") && !hasNavigated) {
-    showAlert({
-      type: "progress",
-      message: "🔄 جاري إنشاء الامتحان...",
-    });
-  
-    setTimeout(() => {
-      if (!hasNavigated) fetchInitialData();
-    }, 10000);
-    return;
-  }
+if ((response.examState === "building" || response.examState === "in_progress") && !hasNavigated.current) {
+  showAlert({
+    type: "progress",
+    message: "🔄 جاري إنشاء الامتحان...",
+  });
+
+  setTimeout(() => {
+    if (!hasNavigated.current) {
+      fetchInitialData();
+    }
+  }, 10000);
+  return;
+}
+
 
 
 
@@ -175,10 +179,11 @@ const fetchInitialData = async () => {
     setExamState(response.examState || "");
 
     // ✅ إذا الامتحان جاهز، روح صفحة العرض
-  if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
-    hasNavigated = true;
+  if ((state !== "building" && state !== "in_progress") && !hasNavigated.current) {
+    hasNavigated.current = true;
     navigate(`/dashboard/viewExam/${id}`);
   }
+
 
 
   } catch (err) {
