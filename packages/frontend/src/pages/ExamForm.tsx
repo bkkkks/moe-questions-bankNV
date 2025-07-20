@@ -80,7 +80,7 @@ const ExamForm: React.FC = () => {
   
 
 
- const [hasNavigated, setHasNavigated] = useState(false);
+ const [hideBuildingAlert, setHideBuildingAlert] = useState(false);
 
 
 
@@ -114,16 +114,19 @@ const fetchInitialData = async () => {
 
     const state = response.examState;
 
-    if ((state === "building" || state === "in_progress") && !hasNavigated) {
-      showAlert({
-        type: "progress",
-        message: "🔄 جاري إنشاء الامتحان...",
-      });
-      if (!hasNavigated) {
-        setTimeout(fetchInitialData, 10000);
+      if ((state === "building" || state === "in_progress") && !hasNavigated) {
+        if (!hideBuildingAlert) {
+          showAlert({
+            type: "progress",
+            message: "🔄 جاري إنشاء الامتحان...",
+            onClose: () => setHideBuildingAlert(true), // أغلق الرسالة
+          });
+        }
+        if (!hasNavigated) {
+          setTimeout(fetchInitialData, 10000);
+        }
+        return;
       }
-      return;
-    }
 
     // ✅ تحقق قبل محاولة القراءة
     const content = response.examContent;
