@@ -75,7 +75,7 @@ const fetchInitialData = async () => {
   try {
     //@ts-ignore
     const response = await invokeApig({
-      path: `/viewExam/${id}`,
+      path: `/ExamForm/${id}`,
       method: "GET",
     });
 
