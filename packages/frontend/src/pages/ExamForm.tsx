@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useRef } from "react";
 import invokeApig from "../lib/callAPI.ts";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCurrentUserEmail } from "../lib/getToken.ts";
@@ -68,191 +68,91 @@ const ExamForm: React.FC = () => {
 
 
   // Polling for exam creation status
-  const fetchInitialData = async () => {
-    if (hasNavigated) {
+ const hasNavigatedRef = useRef(false);
+
+const fetchInitialData = async () => {
+  if (hasNavigatedRef.current) return;
+
+  try {
+    //@ts-ignore
+    const response = await invokeApig({
+      path: `/examForm/${id}`,
+      method: "GET",
+    });
+
+    if (!response || Object.keys(response).length === 0 || !response.examState) {
+      showAlert({
+        type: "progress",
+        message: "🔄 جاري إنشاء الامتحان...",
+      });
+      setTimeout(fetchInitialData, 10000);
       return;
     }
-    try {
-      //@ts-ignore
-      const response = await invokeApig({
-        path: `/examForm/${id}`,
-        method: "GET",
-      });
 
-      if (!response || Object.keys(response).length === 0 || !response.examState) {
-        showAlert({
-          type: "progress",
-          message: "🔄 جاري إنشاء الامتحان...",
-        });
-        setTimeout(fetchInitialData, 10000);
-        return;
-      }
+    const state = response.examState;
+    setExamState(state);
 
-      const state = response.examState;
-      setExamState(state);
-
-      if (state === "building" || state === "in_progress") {
-        showAlert({
-          type: "progress",
-          message: "🔄 جاري إنشاء الامتحان...",
-        });
-        setTimeout(fetchInitialData, 10000);
-        return;
-      }
-
-      // إذا وصلنا هنا، الامتحان جاهز
-      // ✅ تحقق قبل محاولة القراءة
-      const content = response.examContent;
-      if (!content) {
-        setTimeout(fetchInitialData, 10000);
-        return;
-      }
-
-      let parsedContent;
-      if (typeof content === "object") {
-        parsedContent = content;
-      } else if (typeof content === "string") {
-        try {
-          let cleaned = content.trim();
-          if (cleaned.startsWith("```json")) {
-            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
-          }
-          const jsonStart = cleaned.indexOf("{");
-          const jsonEnd = cleaned.lastIndexOf("}");
-          if (jsonStart === -1 || jsonEnd === -1) {
-            throw new Error("No valid JSON boundaries found");
-          }
-          const cleanJson = cleaned.substring(jsonStart, jsonEnd + 1);
-          parsedContent = JSON.parse(cleanJson);
-        } catch (parseErr) {
-          showAlert({
-            type: "failure",
-            message: "Invalid exam format",
-          });
-          return;
-        }
-      } else {
-        showAlert({
-          type: "failure",
-          message: "Invalid exam format",
-        });
-        return;
-      }
-
-      setExamContent(parsedContent);
-      setGrade(response.examClass || "");
-      setSubject(response.examSubject || "");
-      setSemester(response.examSemester || "");
-      setCreator(response.createdBy || "");
-      setDate(response.creationDate || "");
-      setContributers(String(response.contributors || ""));
-      setDuration(response.examDuration || "");
-      setMark(response.examMark || "");
-
-      // التنقل التلقائي عند اكتمال البناء
-    if ((state !== "building" && state !== "in_progress") && !hasNavigated) {
-      localStorage.setItem(hasNavigatedKey, "true");
-      setHasNavigated(true);
-      navigate(`/dashboard/viewExam/${id}`);
-    }
-
-    } catch (err) {
+    if (state === "building" || state === "in_progress") {
       showAlert({
-        type: "failure",
-        message: "Failed to load",
+        type: "progress",
+        message: "🔄 جاري إنشاء الامتحان...",
       });
-    } finally {
-      setLoadingPage(false);
+      setTimeout(fetchInitialData, 10000);
+      return;
     }
-  };
 
-  useEffect(() => {
-    let isCancelled = false;
-    const timer = setTimeout(async () => {
-      try {
-        if (!isCancelled) {
-          await fetchInitialData();
-        }
-      } catch (error) {
-        if (!isCancelled) {
-          showAlert({
-            type: "failure",
-            message: "Failed to load",
-          });
-        }
-      }
-    }, 2000);
-    return () => {
-      clearTimeout(timer);
-      isCancelled = true;
-    };
-    // eslint-disable-next-line
-  }, [id]);
-
-const fetchExamContent = async () => {
-    try {
-      //@ts-ignore
-      const response = await invokeApig({
-        path: `/examForm/${id}`,
-        method: "GET",
-      });
-
-      console.log("Raw Exam Content from Backend:", response.examContent);
-
-      if (!response.examContent) {
-        showAlert({
-          type: "failure",
-          message: "Failed to load",
-        });
-        return;
-      }
-
-      //if (response.examSubject !== "ARAB101") {
+    // ✅ جاهز
+    const content = response.examContent;
+    if (!content) {
+      setTimeout(fetchInitialData, 10000);
+      return;
+    }
 
     let parsedContent;
-    const content = response.examContent;
-    
     if (typeof content === "object") {
-      // ✅ Already parsed from DynamoDB as object
       parsedContent = content;
     } else if (typeof content === "string") {
       try {
-        const jsonStartIndex = content.indexOf("{");
-        const jsonEndIndex = content.lastIndexOf("}");
-        if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-          const jsonString = content.substring(jsonStartIndex, jsonEndIndex + 1).trim();
-          parsedContent = JSON.parse(jsonString);
-        } else {
-          throw new Error("No valid JSON found in examContent string.");
+        let cleaned = content.trim();
+        if (cleaned.startsWith("```json")) {
+          cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
         }
-      } catch (error) {
-        console.error("❌ Failed to parse exam content as JSON:", content);
-        showAlert({
-          type: "failure",
-          message: "Invalid exam format",
-        });
+        const jsonStart = cleaned.indexOf("{");
+        const jsonEnd = cleaned.lastIndexOf("}");
+        if (jsonStart === -1 || jsonEnd === -1) {
+          throw new Error("No valid JSON boundaries found");
+        }
+        parsedContent = JSON.parse(cleaned.slice(jsonStart, jsonEnd + 1));
+      } catch (err) {
+        showAlert({ type: "failure", message: "Invalid exam format" });
         return;
       }
     } else {
-      console.error("❌ Unexpected examContent type:", typeof content);
-      showAlert({
-        type: "failure",
-        message: "Unsupported exam content format",
-      });
+      showAlert({ type: "failure", message: "Invalid exam format" });
       return;
     }
-    
-    setExamContent(parsedContent);
-    console.log("✅ Parsed Exam Content Successfully Set in State:", parsedContent);
 
-    } catch (error) {
-      console.error("Error fetching exam content:", error);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
+    setExamContent(parsedContent);
+    setGrade(response.examClass || "");
+    setSubject(response.examSubject || "");
+    setSemester(response.examSemester || "");
+    setCreator(response.createdBy || "");
+    setDate(response.creationDate || "");
+    setContributers(String(response.contributors || ""));
+    setDuration(response.examDuration || "");
+    setMark(response.examMark || "");
+
+    if (!hasNavigatedRef.current) {
+      hasNavigatedRef.current = true;
+      navigate(`/dashboard/viewExam/${id}`);
     }
-  };
+
+  } catch (err) {
+    showAlert({ type: "failure", message: "Failed to load" });
+  } finally {
+    setLoadingPage(false);
+  }
+};
 
 
   useEffect(() => {
