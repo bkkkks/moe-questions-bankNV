@@ -94,7 +94,7 @@ const ExamForm: React.FC = () => {
           type: "info",
           message: "جاري إنشاء الامتحان، يرجى الانتظار...",
         });
-        setTimeout(fetchExamContent, 10000);
+        setTimeout(fetchInitialData, 10000);
       } else {
         showAlert({
           type: "failure",
