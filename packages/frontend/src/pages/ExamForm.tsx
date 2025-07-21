@@ -118,7 +118,7 @@ const ExamForm: React.FC = () => {
           showAlert({
             type: "success",
             message: "تم تحميل الامتحان بنجاح",
-            autoClose: 2000 // إذا كان مدعوم في AlertComponent
+            
           });
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
