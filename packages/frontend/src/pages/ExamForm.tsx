@@ -56,7 +56,7 @@ const ExamForm: React.FC = () => {
   const [loadingApproval, setLoadingApproval] = useState(false);
   const [feedback, setFeedback] = useState<{ [section: string]: string }>({});
   const [isEditing, setIsEditing] = useState(false);
-  const [examState, setExamState] = useState("");
+  
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
