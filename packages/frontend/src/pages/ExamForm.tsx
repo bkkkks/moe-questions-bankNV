@@ -63,7 +63,7 @@ const ExamForm: React.FC = () => {
   const { showAlert } = useAlert();
   
 
-  );
+  
 
 
   // Polling for exam creation status
