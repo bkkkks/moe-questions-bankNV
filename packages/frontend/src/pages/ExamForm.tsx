@@ -154,20 +154,6 @@ const fetchInitialData = async () => {
 };
 
 
-  useEffect(() => {
-    const loadExamContent = async () => {
-      try {
-        await fetchExamContent(); // Fetch and parse content
-      } catch (err) {
-        console.error("Error loading exam content:", err);
-        showAlert({
-          type: "failure",
-          message: "Failed to load",
-        });
-      }
-    };
-    loadExamContent();
-  }, [id]);
 
   
  
