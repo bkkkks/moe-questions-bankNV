@@ -87,63 +87,52 @@ const ExamForm: React.FC = () => {
         method: "GET",
       });
       
-      if (!response.examContent) {
-      pollAttempts++;
-      if (pollAttempts < MAX_ATTEMPTS) {
-        showAlert({
-          type: "info",
-          message: "جاري إنشاء الامتحان، يرجى الانتظار...",
-        });
-        setTimeout(fetchInitialData, 10000);
-      } else {
-        showAlert({
-          type: "failure",
-          message: "انتهى الوقت ولم يتم إنشاء الامتحان. حاول لاحقاً.",
-        });
-      }
-      return;
-    }
-      
-      if (!response || Object.keys(response).length === 0) {
-        console.error("Response is empty or undefined:", response);
-        showAlert({
-          type: "failure",
-          message: "Invalid exam format",
-        });
+      if (!response || !response.examContent) {
+        pollAttempts++;
+        if (pollAttempts < MAX_ATTEMPTS) {
+          showAlert({
+            type: "info",
+            message: "جاري إنشاء الامتحان، يرجى الانتظار...",
+          });
+          setTimeout(fetchInitialData, 10000);
+        } else {
+          showAlert({
+            type: "failure",
+            message: "انتهى الوقت ولم يتم إنشاء الامتحان. حاول لاحقاً.",
+          });
+          setLoadingPage(false);
+        }
         return;
-      }
+        }
 
       console.log("Initial Data Loaded:", response);
 
       const content = response.examContent;
 
-      // if (response.examSubject !== "ARAB101") {
-        // Parse examContent if it's a string
-        if (typeof content === "string") {
-          try {
-            const parsedContent = JSON.parse(content);
-            setExamContent(parsedContent);
-          } catch (parseError) {
-            console.error("Failed to parse exam content as JSON:", content);
-            showAlert({
-              type:"failure",
-              message: "Invalid exam format"
-            })
-            return;
-          }
-        } else if (typeof content === "object") {
-          setExamContent(content); // Set directly if already an object
-        } else {
-          console.error("Unexpected examContent format:", typeof content);
+      if (typeof content === "string") {
+        try {
+          const parsedContent = JSON.parse(content);
+          setExamContent(parsedContent);
+        } catch (parseError) {
+          console.error("Failed to parse exam content as JSON:", content);
           showAlert({
             type: "failure",
-            message: "Invalid exam format",
-          });
+            message: "Invalid exam format"
+          })
+          setLoadingPage(false);
           return;
         }
-      // } else {
-      //   setExamContent(content);
-      // }
+      } else if (typeof content === "object") {
+        setExamContent(content);
+      } else {
+        console.error("Unexpected examContent format:", typeof content);
+        showAlert({
+          type: "failure",
+          message: "Invalid exam format",
+        });
+        setLoadingPage(false);
+        return;
+      }
 
       // Set metadata fields
       setGrade(response.examClass || "");
@@ -160,6 +149,7 @@ const ExamForm: React.FC = () => {
       if (response.examState !== "building") {
         navigate(`/dashboard/viewExam/${id}`);
       }
+      setLoadingPage(false);
     } catch (err: any) {
       console.error("Error fetching initial data:", err);
       showAlert({
