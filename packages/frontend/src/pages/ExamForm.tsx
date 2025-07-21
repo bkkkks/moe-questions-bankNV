@@ -71,6 +71,11 @@ const ExamForm: React.FC = () => {
 
 const fetchInitialData = async () => {
   if (hasNavigatedRef.current) return;
+    try {
+    const response = await invokeApig({
+      path: `/examForm/${id}`,
+      method: "GET",
+    });
 
 
     if (!response || Object.keys(response).length === 0 || !response.examState) {
