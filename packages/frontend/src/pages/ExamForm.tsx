@@ -44,7 +44,7 @@ const ExamForm: React.FC = () => {
   const [createdBy, setCreator] = useState("");
   const [creationDate, setDate] = useState("");
   const [contributers, setContributers] = useState("");
-  const [examState, setExamState] = useState("");
+  const [examState] = useState("");
   const [_responseResult, _setResponseResult] = useState<string>("");
   const [examContent, setExamContent] = useState<ExamContent | null>(null);
   const [_editMode, _setEditMode] = useState(false);
