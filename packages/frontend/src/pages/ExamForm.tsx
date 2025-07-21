@@ -62,9 +62,7 @@ const ExamForm: React.FC = () => {
   const navigate = useNavigate();
   const { showAlert } = useAlert();
   
-  const hasNavigatedKey = `hasNavigated-${id}`;
-  const [hasNavigated, setHasNavigated] = useState(
-    localStorage.getItem(hasNavigatedKey) === "true"
+
   );
 
 
