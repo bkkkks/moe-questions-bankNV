@@ -69,7 +69,10 @@ const ExamForm: React.FC = () => {
 
 
   // Polling for exam creation status
- const fetchInitialData = async () => {
+const MAX_RETRIES = 20; // مثلاً يحاول لمدة 200 ثانية كحد أقصى
+let retryCount = 0;
+
+const fetchInitialData = async () => {
   if (hasNavigatedRef.current) return;
 
   try {
@@ -80,18 +83,31 @@ const ExamForm: React.FC = () => {
       isFunction: false,
     });
 
-    const content = response.examContent;
-    if (!content) {
-      showAlert({
-        type: "progress",
-        message: "🔄 جاري إنشاء الامتحان...",
-      });
-      setTimeout(fetchInitialData, 10000);
+    const state = response.examState;
+    setExamState(state);
+
+    // اذا لسه ما خلص بناء الامتحان أو ما فيه بيانات
+    if (!response || !state || state === "building" || state === "in_progress" || !response.examContent) {
+      if (retryCount < MAX_RETRIES) {
+        retryCount++;
+        showAlert({
+          type: "progress",
+          message: `🔄 جاري إنشاء الامتحان... [${retryCount}/${MAX_RETRIES}]`,
+        });
+        setTimeout(fetchInitialData, 10000); // يعيد المحاولة كل 10 ثواني
+      } else {
+        showAlert({
+          type: "failure",
+          message: "⏱️ انتهى وقت الانتظار. لم يتم إنشاء الامتحان.",
+        });
+      }
       return;
     }
 
-    // ✅ Try to parse
+    // ✅ المحتوى جاهز الآن
     let parsedContent;
+    const content = response.examContent;
+
     if (typeof content === "object") {
       parsedContent = content;
     } else if (typeof content === "string") {
@@ -102,20 +118,15 @@ const ExamForm: React.FC = () => {
         }
         const jsonStart = cleaned.indexOf("{");
         const jsonEnd = cleaned.lastIndexOf("}");
-        if (jsonStart === -1 || jsonEnd === -1) {
-          throw new Error("Invalid JSON boundaries");
-        }
+        if (jsonStart === -1 || jsonEnd === -1) throw new Error("Invalid JSON boundaries");
         parsedContent = JSON.parse(cleaned.slice(jsonStart, jsonEnd + 1));
       } catch (err) {
-        showAlert({ type: "failure", message: "Invalid exam format" });
+        showAlert({ type: "failure", message: "📄 صيغة الامتحان غير صالحة" });
         return;
       }
-    } else {
-      showAlert({ type: "failure", message: "Unsupported format" });
-      return;
     }
 
-    // ✅ Save values
+    // إعداد الحالة
     setExamContent(parsedContent);
     setGrade(response.examClass || "");
     setSubject(response.examSubject || "");
@@ -126,19 +137,21 @@ const ExamForm: React.FC = () => {
     setDuration(response.examDuration || "");
     setMark(response.examMark || "");
 
-    // ✅ Navigate when ready
+    // التنقل بعد ما يصير جاهز
     if (!hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
       navigate(`/dashboard/viewExam/${id}`);
     }
 
   } catch (err) {
-    showAlert({ type: "failure", message: "Failed to load" });
+    showAlert({
+      type: "failure",
+      message: "⚠️ فشل في تحميل بيانات الامتحان",
+    });
   } finally {
     setLoadingPage(false);
   }
 };
-
 
 
 
