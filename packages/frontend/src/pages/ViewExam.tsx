@@ -155,7 +155,7 @@ const ViewExam: React.FC = () => {
       console.log("Initial Data Loaded:", response);
 
       if (response.examState === "building") {
-        navigate("/dashboard/examForm/" + id);
+        navigate("/dashboard/ViewExam/" + id);
       }
 
       content = response.examContent;
