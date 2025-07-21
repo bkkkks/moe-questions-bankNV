@@ -75,9 +75,9 @@ const ExamForm: React.FC = () => {
   const { showAlert } = useAlert();
 
   
-
-
-
+  let pollAttempts = 0;
+  const MAX_ATTEMPTS = 30; // 3 دقائق
+  
   // Fetch Initial Data
   const fetchInitialData = async () => {
     try {
@@ -86,7 +86,24 @@ const ExamForm: React.FC = () => {
         path: `/examForm/${id}`, // Adjust path as needed
         method: "GET",
       });
-
+      
+      if (!response.examContent) {
+      pollAttempts++;
+      if (pollAttempts < MAX_ATTEMPTS) {
+        showAlert({
+          type: "info",
+          message: "جاري إنشاء الامتحان، يرجى الانتظار...",
+        });
+        setTimeout(fetchExamContent, 10000);
+      } else {
+        showAlert({
+          type: "failure",
+          message: "انتهى الوقت ولم يتم إنشاء الامتحان. حاول لاحقاً.",
+        });
+      }
+      return;
+    }
+      
       if (!response || Object.keys(response).length === 0) {
         console.error("Response is empty or undefined:", response);
         showAlert({
