@@ -67,48 +67,28 @@ const ExamForm: React.FC = () => {
 
 
   // Polling for exam creation status
- const hasNavigatedRef = useRef(false);
-
-const fetchInitialData = async () => {
+ const fetchInitialData = async () => {
   if (hasNavigatedRef.current) return;
-    try {
-      const response = await invokeApig({
-        path: `/examForm/${id}`,
-        method: "GET",
-        body: null, // لأن GET ما يحتاج body فعلي
-        isFunction: false, // أو true إذا كنت تستدعي Lambda URL
-      });
 
+  try {
+    const response = await invokeApig({
+      path: `/examForm/${id}`,
+      method: "GET",
+      body: null,
+      isFunction: false,
+    });
 
-
-    if (!response || Object.keys(response).length === 0 || !response.examState) {
-      showAlert({
-        type: "progress",
-        message: "🔄 جاري إنشاء الامتحان...",
-      });
-      setTimeout(fetchInitialData, 10000);
-      return;
-    }
-
-    const state = response.examState;
-    setExamState(state);
-
-    if (state === "building" || state === "in_progress") {
-      showAlert({
-        type: "progress",
-        message: "🔄 جاري إنشاء الامتحان...",
-      });
-      setTimeout(fetchInitialData, 10000);
-      return;
-    }
-
-    // ✅ جاهز
     const content = response.examContent;
     if (!content) {
+      showAlert({
+        type: "progress",
+        message: "🔄 جاري إنشاء الامتحان...",
+      });
       setTimeout(fetchInitialData, 10000);
       return;
     }
 
+    // ✅ Try to parse
     let parsedContent;
     if (typeof content === "object") {
       parsedContent = content;
@@ -121,7 +101,7 @@ const fetchInitialData = async () => {
         const jsonStart = cleaned.indexOf("{");
         const jsonEnd = cleaned.lastIndexOf("}");
         if (jsonStart === -1 || jsonEnd === -1) {
-          throw new Error("No valid JSON boundaries found");
+          throw new Error("Invalid JSON boundaries");
         }
         parsedContent = JSON.parse(cleaned.slice(jsonStart, jsonEnd + 1));
       } catch (err) {
@@ -129,10 +109,11 @@ const fetchInitialData = async () => {
         return;
       }
     } else {
-      showAlert({ type: "failure", message: "Invalid exam format" });
+      showAlert({ type: "failure", message: "Unsupported format" });
       return;
     }
 
+    // ✅ Save values
     setExamContent(parsedContent);
     setGrade(response.examClass || "");
     setSubject(response.examSubject || "");
@@ -143,6 +124,7 @@ const fetchInitialData = async () => {
     setDuration(response.examDuration || "");
     setMark(response.examMark || "");
 
+    // ✅ Navigate when ready
     if (!hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
       navigate(`/dashboard/viewExam/${id}`);
@@ -154,6 +136,7 @@ const fetchInitialData = async () => {
     setLoadingPage(false);
   }
 };
+
 
 
 
