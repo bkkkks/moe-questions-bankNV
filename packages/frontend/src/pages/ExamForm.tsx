@@ -1,41 +1,47 @@
-import React, { useState, useEffect, useRef } from "react";
+
+
+import React, { useState, useEffect } from "react";
 import invokeApig from "../lib/callAPI.ts";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getCurrentUserEmail } from "../lib/getToken.ts";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
 import { useAlert } from "../components/AlertComponent.tsx";
 import SpeechRecorder from "../components/SpeechRecorder.tsx";
-import { getUserToken } from "../lib/getToken";
+
 
 interface Part {
-  part: string;
-  title: string;
-  total_marks: number;
-  subsections: Subsection[];
+  part: string; // Part number or identifier
+  title: string; // Title of the part
+  total_marks: number; // Total marks for this part
+  subsections: Subsection[]; // Array of subsections
 }
 
 interface Subsection {
-  subsection: string;
-  title: string;
-  marks: number;
+  subsection: string; // Subsection identifier
+  title: string; // Subsection title
+  marks: number; // Marks for the subsection
   content: {
-    passage?: string;
-    questions?: Question[];
+    passage?: string; // Optional passage
+    questions?: Question[]; // Optional questions array
   };
 }
 
 interface Question {
-  question: string;
-  description?: string;
-  options?: string[];
+  question: string;// Question text
+  description?: string; // Optional description
+  options?: string[]; // Optional multiple-choice options
 }
 
 interface ExamContent {
-  parts: Part[];
-  [key: string]: any;
+  parts: Part[]; // Add this to reflect the structure of the data
+  [key: string]: any; // Allow flexibility for other properties
 }
 
+
+//storing user input
 const ExamForm: React.FC = () => {
+  //store the input
   const [_grade, setGrade] = useState("");
   const [_subject, setSubject] = useState("");
   const [_duration, setDuration] = useState("");
@@ -45,116 +51,177 @@ const ExamForm: React.FC = () => {
   const [creationDate, setDate] = useState("");
   const [contributers, setContributers] = useState("");
   const [examState, setExamState] = useState("");
-  const [_responseResult, _setResponseResult] = useState<string>("");
+  const [_responseResult, _setResponseResult] = useState<string>(""); // State to store the API response
+  //const [examContent, setExamContent] = useState<any>(null); // Store exam content as JSON
   const [examContent, setExamContent] = useState<ExamContent | null>(null);
-  const [_editMode, _setEditMode] = useState(false);
+  const [_editMode, _setEditMode] = useState(false); // Toggle edit mode
   const [_editedContent, _setEditedContent] = useState<Record<string, any>>({});
+  
+ 
+
+
+  // State for feedback and UI
   const [loadingStates, setLoadingStates] = useState<{ [key: string]: boolean }>({});
+
   const [_loading, setLoading] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [_isLoading, _setIsLoading] = useState(false);
   const [loadingApproval, setLoadingApproval] = useState(false);
   const [feedback, setFeedback] = useState<{ [section: string]: string }>({});
   const [isEditing, setIsEditing] = useState(false);
-  
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showAlert } = useAlert();
-  const hasNavigatedRef = useRef(false);
 
   
 
-  
 
 
-  // Polling for exam creation status
-const MAX_RETRIES = 20; // مثلاً يحاول لمدة 200 ثانية كحد أقصى
-let retryCount = 0;
+  // Fetch Initial Data
+  const fetchInitialData = async () => {
+    try {
+      //@ts-ignore
+      const response = await invokeApig({
+        path: `/examForm/${id}`, // Adjust path as needed
+        method: "GET",
+      });
 
-const fetchInitialData = async () => {
-  if (hasNavigatedRef.current) return;
-
-  try {
-    const response = await invokeApig({
-      path: `/examForm/${id}`,
-      method: "GET",
-      body: null,
-      isFunction: false,
-    });
-
-    const state = response.examState;
-    setExamState(state);
-
-    // اذا لسه ما خلص بناء الامتحان أو ما فيه بيانات
-    if (!response || !state || state === "building" || state === "in_progress" || !response.examContent) {
-      if (retryCount < MAX_RETRIES) {
-        retryCount++;
-        showAlert({
-          type: "progress",
-          message: `🔄 جاري إنشاء الامتحان... [${retryCount}/${MAX_RETRIES}]`,
-        });
-        setTimeout(fetchInitialData, 10000); // يعيد المحاولة كل 10 ثواني
-      } else {
+      if (!response || Object.keys(response).length === 0) {
+        console.error("Response is empty or undefined:", response);
         showAlert({
           type: "failure",
-          message: "⏱️ انتهى وقت الانتظار. لم يتم إنشاء الامتحان.",
+          message: "Invalid exam format",
         });
-      }
-      return;
-    }
-
-    // ✅ المحتوى جاهز الآن
-    let parsedContent;
-    const content = response.examContent;
-
-    if (typeof content === "object") {
-      parsedContent = content;
-    } else if (typeof content === "string") {
-      try {
-        let cleaned = content.trim();
-        if (cleaned.startsWith("```json")) {
-          cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
-        }
-        const jsonStart = cleaned.indexOf("{");
-        const jsonEnd = cleaned.lastIndexOf("}");
-        if (jsonStart === -1 || jsonEnd === -1) throw new Error("Invalid JSON boundaries");
-        parsedContent = JSON.parse(cleaned.slice(jsonStart, jsonEnd + 1));
-      } catch (err) {
-        showAlert({ type: "failure", message: "📄 صيغة الامتحان غير صالحة" });
         return;
       }
+
+      console.log("Initial Data Loaded:", response);
+
+      const content = response.examContent;
+
+      // if (response.examSubject !== "ARAB101") {
+        // Parse examContent if it's a string
+        if (typeof content === "string") {
+          try {
+            const parsedContent = JSON.parse(content);
+            setExamContent(parsedContent);
+          } catch (parseError) {
+            console.error("Failed to parse exam content as JSON:", content);
+            showAlert({
+              type:"failure",
+              message: "Invalid exam format"
+            })
+            return;
+          }
+        } else if (typeof content === "object") {
+          setExamContent(content); // Set directly if already an object
+        } else {
+          console.error("Unexpected examContent format:", typeof content);
+          showAlert({
+            type: "failure",
+            message: "Invalid exam format",
+          });
+          return;
+        }
+      // } else {
+      //   setExamContent(content);
+      // }
+
+      // Set metadata fields
+      setGrade(response.examClass || "");
+      setSubject(response.examSubject || "");
+      setSemester(response.examSemester || "");
+      setCreator(response.createdBy || "");
+      setDate(response.creationDate || "");
+      setContributers(String(response.contributors || ""));
+      setDuration(response.examDuration || "");
+      setMark(response.examMark || "");
+      setExamState(response.examState || "");
+
+      // Redirect if exam is not in "building" state
+      if (response.examState !== "building") {
+        navigate(`/dashboard/viewExam/${id}`);
+      }
+    } catch (err: any) {
+      console.error("Error fetching initial data:", err);
+      showAlert({
+        type: "failure",
+        message: "Failed to load",
+      });
+    } finally {
+      setLoadingPage(false); // Mark loading as complete
     }
+  };
 
-    // إعداد الحالة
-    setExamContent(parsedContent);
-    setGrade(response.examClass || "");
-    setSubject(response.examSubject || "");
-    setSemester(response.examSemester || "");
-    setCreator(response.createdBy || "");
-    setDate(response.creationDate || "");
-    setContributers(String(response.contributors || ""));
-    setDuration(response.examDuration || "");
-    setMark(response.examMark || "");
 
-    // التنقل بعد ما يصير جاهز
-    if (!hasNavigatedRef.current) {
-      hasNavigatedRef.current = true;
-      navigate(`/dashboard/viewExam/${id}`);
+  const fetchExamContent = async () => {
+    try {
+      //@ts-ignore
+      const response = await invokeApig({
+        path: `/examForm/${id}`,
+        method: "GET",
+      });
+
+      console.log("Raw Exam Content from Backend:", response.examContent);
+
+      if (!response.examContent) {
+        showAlert({
+          type: "failure",
+          message: "Failed to load",
+        });
+        return;
+      }
+
+      // if (response.examSubject !== "ARAB101") {
+
+        let parsedContent;
+        try {
+          // Extract the JSON portion from the descriptive text
+          const jsonStartIndex = response.examContent.indexOf("{");
+          const jsonEndIndex = response.examContent.lastIndexOf("}");
+          if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+            const jsonString = response.examContent.substring(jsonStartIndex, jsonEndIndex + 1).trim();
+            console.log("Extracted JSON String:", jsonString);
+            parsedContent = JSON.parse(jsonString); // Parse the JSON object
+          } else {
+            throw new Error("No valid JSON found in examContent string.");
+          }
+        } catch (error) {
+          console.error("Failed to parse exam content as JSON:", response.examContent);
+          showAlert({
+            type: "failure",
+            message: "Invalid exam format",
+          });
+          return;
+        }
+      
+        setExamContent(parsedContent);
+        console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
+    } catch (error) {
+      console.error("Error fetching exam content:", error);
+      showAlert({
+        type: "failure",
+        message: "Failed to load",
+      });
     }
-
-  } catch (err) {
-    showAlert({
-      type: "failure",
-      message: "⚠️ فشل في تحميل بيانات الامتحان",
-    });
-  } finally {
-    setLoadingPage(false);
-  }
-};
+  };
 
 
-
+  useEffect(() => {
+    const loadExamContent = async () => {
+      try {
+        await fetchExamContent(); // Fetch and parse content
+      } catch (err) {
+        console.error("Error loading exam content:", err);
+        showAlert({
+          type: "failure",
+          message: "Failed to load",
+        });
+      }
+    };
+    loadExamContent();
+  }, [id]);
   
  
   useEffect(() => {
@@ -260,51 +327,32 @@ const fetchInitialData = async () => {
     try {
       setLoading(true);
 
-    //  const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      //console.log("Function URL:", functionURL);
+      const functionURL = `${import.meta.env.VITE_API_URL}/feedback`;
+      console.log("Function URL:", functionURL);
 
-      //const response = await fetch(functionURL, {
-        //method: "POST",
-        //headers: {
-         // "Content-Type": "application/json",
-        //},
-        //body: JSON.stringify(requestBody),
-      const token = await getUserToken(currentUser);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/queueExam`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(requestBody),
-      
+      const response = await fetch(functionURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
+  
       console.log("API Response:", response);
+
       const data = await response.json();
   
       // Check if the backend returns the updated content
-         // if (data.newExamContent) {
-         //   setExamContent(data.newExamContent); // Update the entire exam content
-        //  }
-      try {
-        const cleaned = data.newExamContent.trim();
-        const jsonStart = cleaned.indexOf("{");
-        const cleanJson = cleaned.slice(jsonStart).trim();
-        const parsed = JSON.parse(cleanJson);
-        setExamContent(parsed);
-      } catch (err) {
-        console.error("Failed to parse updated exam content", data.newExamContent);
-        showAlert({ type: "failure", message: "Invalid exam format after update." });
-        return; // مهم: لا تكمل بعد فشل التحليل
+      if (data.updatedExamContent) {
+        setExamContent(data.updatedExamContent); // Update the entire exam content
       }
-
   
       if (data.totalMarks) {
         setMark(data.totalMarks); // Update the total marks
       }
   
       // // Provide feedback to the user
-      if (data.newExamContent || data.totalMarks) {
+      if (data.updatedExamContent || data.totalMarks) {
         // Refresh the page after the success message
         window.location.reload();
       } else {
@@ -313,7 +361,6 @@ const fetchInitialData = async () => {
           message: "Changes applied",
         });
       }
-
   
       // Clear the feedback fields after submission
       setFeedback({});
@@ -1271,6 +1318,7 @@ const fetchInitialData = async () => {
       </style>
     </div>
   );
+  
 };
 
 export default ExamForm;
