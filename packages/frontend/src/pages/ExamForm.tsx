@@ -72,6 +72,7 @@ const ExamForm: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { showAlert} = useAlert();
   
 
   
