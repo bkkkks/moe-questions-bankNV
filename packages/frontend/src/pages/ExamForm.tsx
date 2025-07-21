@@ -113,7 +113,12 @@ const ExamForm: React.FC = () => {
         try {
           const parsedContent = JSON.parse(content);
           setExamContent(parsedContent);
-          hideAlert && hideAlert();
+          
+          showAlert({
+            type: "success",
+            message: "تم تحميل الامتحان بنجاح",
+            autoClose: 2000 // إذا كان مدعوم في AlertComponent
+          });
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
           showAlert({
@@ -125,7 +130,7 @@ const ExamForm: React.FC = () => {
         }
       } else if (typeof content === "object") {
         setExamContent(content);
-        hideAlert && hideAlert();
+        
       } else {
         console.error("Unexpected examContent format:", typeof content);
         showAlert({
