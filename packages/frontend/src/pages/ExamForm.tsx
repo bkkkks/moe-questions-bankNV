@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-
 import invokeApig from "../lib/callAPI.ts";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCurrentUserEmail } from "../lib/getToken.ts";
@@ -57,10 +56,13 @@ const ExamForm: React.FC = () => {
   const [loadingApproval, setLoadingApproval] = useState(false);
   const [feedback, setFeedback] = useState<{ [section: string]: string }>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [examState, setExamState] = useState("");
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showAlert } = useAlert();
+  const hasNavigatedRef = useRef(false);
+
   
 
   
