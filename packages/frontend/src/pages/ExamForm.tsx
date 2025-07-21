@@ -72,7 +72,7 @@ const ExamForm: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { hideAlert } = useAlert();
+  
 
   
   let pollAttempts = 0;
