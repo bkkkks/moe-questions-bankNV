@@ -138,7 +138,7 @@ const ViewExam: React.FC = () => {
     try {
       //@ts-ignore
       const response = await invokeApig({
-        path: `/examForm/${id}`, // Adjust path as needed
+        path: `/ViewExam/${id}`, // Adjust path as needed
         method: "GET",
       });
 
