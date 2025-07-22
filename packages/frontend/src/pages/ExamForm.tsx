@@ -72,7 +72,7 @@ const ExamForm: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { showAlert} = useAlert();
+  const { showAlert, closeAlert} = useAlert();
   
 
   
@@ -117,7 +117,11 @@ const ExamForm: React.FC = () => {
           
           showAlert({
             type: "success",
-            message: "تم تحميل الامتحان بنجاح",
+            message: "تم تحميل الامتحان بنجاح"
+          });
+          setTimeout(() => {
+            closeAlert();
+          }, 2000);
             
           });
         } catch (parseError) {
