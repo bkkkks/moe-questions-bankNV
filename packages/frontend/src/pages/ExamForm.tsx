@@ -119,11 +119,7 @@ const ExamForm: React.FC = () => {
             type: "success",
             message: "تم تحميل الامتحان بنجاح"
           });
-          setTimeout(() => {
-            closeAlert();
-          }, 2000);
-            
-          });
+
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
           showAlert({
@@ -189,6 +185,15 @@ const ExamForm: React.FC = () => {
           type: "failure",
           message: "Failed to load",
         });
+         showAlert({
+          type: "success",
+          message: "تم تحميل الامتحان بنجاح"
+        });
+        setTimeout(() => {
+          if (typeof closeAlert === "function") {
+            closeAlert();
+          }
+        }, 2000);
         return;
       }
 
