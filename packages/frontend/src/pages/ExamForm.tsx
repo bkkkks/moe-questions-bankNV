@@ -189,11 +189,11 @@ const ExamForm: React.FC = () => {
 
       console.log("Raw Exam Content from Backend:", response.examContent);
 
-      if (!response.examContent) {
+     /* if (!response.examContent) {
         showAlert({
           type: "failure",
           message: "Failed to load",
-        });
+        });*/
         return;
       }
 
