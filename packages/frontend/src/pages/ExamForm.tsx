@@ -195,7 +195,7 @@ const ExamForm: React.FC = () => {
           message: "Failed to load",
         });*/
         return;
-      }
+      //}
 
       // if (response.examSubject !== "ARAB101") {
 
