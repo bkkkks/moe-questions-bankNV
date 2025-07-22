@@ -222,13 +222,10 @@ const ExamForm: React.FC = () => {
       
         setExamContent(parsedContent);
         console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
-    } catch (error) {
-      console.error("Error fetching exam content:", error);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
-    }
+      } catch (error) {
+        console.error("Error fetching exam content:", error);
+        return;
+      }
   };
 
 
