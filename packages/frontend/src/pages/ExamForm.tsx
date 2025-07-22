@@ -189,11 +189,11 @@ const ExamForm: React.FC = () => {
 
       console.log("Raw Exam Content from Backend:", response.examContent);
 
-      if (!response.examContent) {
+     /* if (!response.examContent) {
         showAlert({
           type: "failure",
           message: "Failed to load",
-        });
+        });*/
         return;
       //}
 
@@ -224,12 +224,12 @@ const ExamForm: React.FC = () => {
         console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
     } catch (error) {
       console.error("Error fetching exam content:", error);
-      // showAlert({
-      //   type: "failure",
-      //   message: "Failed to load",
-      // });
-      return;
+      showAlert({
+        type: "failure",
+        message: "Failed to load",
+      });
     }
+  };
 
 
   useEffect(() => {
