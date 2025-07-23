@@ -90,17 +90,14 @@ const ViewExam: React.FC = () => {
     try {
       setLoadingChangeState(true);
 
-     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      //console.log("Function URL:", functionURL);
-
-      const apiURL = `${import.meta.env.VITE_API_URL}/feedback`;
+      const functionURL = `${import.meta.env.VITE_API_URL}/feedback`;
+      console.log("Function URL:", functionURL);
 
       const response = await invokeLambda({
         method: "POST",
         body: requestBody,
-        url: apiURL,
+        url: functionURL,
       });
-
 
       const data = await response.json();
 
@@ -138,7 +135,7 @@ const ViewExam: React.FC = () => {
     try {
       //@ts-ignore
       const response = await invokeApig({
-        path: `/ViewExam/${id}`, // Adjust path as needed
+        path: `/examForm/${id}`, // Adjust path as needed
         method: "GET",
       });
 
@@ -155,7 +152,7 @@ const ViewExam: React.FC = () => {
       console.log("Initial Data Loaded:", response);
 
       if (response.examState === "building") {
-        navigate("/dashboard/ViewExam/" + id);
+        navigate("/dashboard/examForm/" + id);
       }
 
       content = response.examContent;
@@ -164,17 +161,7 @@ const ViewExam: React.FC = () => {
 
       if (typeof content === "string") {
         try {
-          //const parsedContent = JSON.parse(content);
-          let cleaned = content.trim();
-          if (cleaned.startsWith("```json")) {
-            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
-          }
-          const jsonStart = cleaned.indexOf("{");
-          if (jsonStart === -1) throw new Error("Missing JSON object start");
-          
-          const cleanJson = cleaned.slice(jsonStart).trim();
-          const parsedContent = JSON.parse(cleanJson);
-
+          const parsedContent = JSON.parse(content);
           setExamContent(parsedContent);
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
@@ -254,45 +241,37 @@ const ViewExam: React.FC = () => {
         return;
       }
 
-     const content = response.examContent;
-    let parsedContent;
-    
-    console.log("Raw Exam Content from Backend:", content);
-    console.log("Type of content:", typeof content);
-    
-    if (typeof content === "object") {
-      // ✅ Already parsed correctly from DynamoDB
-      parsedContent = content;
-    } else if (typeof content === "string") {
+      let parsedContent;
       try {
-        const jsonStart = content.indexOf("{");
-        const jsonEnd = content.lastIndexOf("}");
-        if (jsonStart === -1 || jsonEnd === -1) {
-          throw new Error("Invalid JSON boundaries");
+        // Extract the JSON portion from the descriptive text
+        const jsonStartIndex = response.examContent.indexOf("{");
+        const jsonEndIndex = response.examContent.lastIndexOf("}");
+        if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+          const jsonString = response.examContent
+            .substring(jsonStartIndex, jsonEndIndex + 1)
+            .trim();
+          console.log("Extracted JSON String:", jsonString);
+          parsedContent = JSON.parse(jsonString); // Parse the JSON object
+        } else {
+          throw new Error("No valid JSON found in examContent string.");
         }
-    
-        const jsonString = content.slice(jsonStart, jsonEnd + 1).trim();
-        parsedContent = JSON.parse(jsonString);
-      } catch (err) {
-        console.error("❌ Failed to parse examContent string:", err);
+      } catch (error) {
+        console.error(
+          "Failed to parse exam content as JSON:",
+          response.examContent
+        );
         showAlert({
           type: "failure",
-          message: "Invalid exam content format",
+          message: "Failed to load",
         });
         return;
       }
-    } else {
-      console.error("❌ Unexpected type of examContent:", typeof content);
-      showAlert({
-        type: "failure",
-        message: "Unsupported exam content format",
-      });
-      return;
-    }
-    
-    setExamContent(parsedContent);
-    console.log("✅ Parsed Exam Content Successfully Set in State:", parsedContent);
 
+      setExamContent(parsedContent);
+      console.log(
+        "Parsed Exam Content Successfully Set in State:",
+        parsedContent
+      );
     } catch (error) {
       console.error("Error fetching exam content:", error);
       showAlert({
