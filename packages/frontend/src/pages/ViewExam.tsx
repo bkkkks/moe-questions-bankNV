@@ -138,7 +138,7 @@ const ViewExam: React.FC = () => {
     try {
       //@ts-ignore
       const response = await invokeApig({
-        path: `/examForm/${id}`, // Adjust path as needed
+        path: `/ViewExam/${id}`, // Adjust path as needed
         method: "GET",
       });
 
@@ -155,7 +155,7 @@ const ViewExam: React.FC = () => {
       console.log("Initial Data Loaded:", response);
 
       if (response.examState === "building") {
-        navigate("/dashboard/examForm/" + id);
+        navigate("/dashboard/ViewExam/" + id);
       }
 
       content = response.examContent;
