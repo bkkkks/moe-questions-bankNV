@@ -90,10 +90,7 @@ const ViewExam: React.FC = () => {
     try {
       setLoadingChangeState(true);
 
-     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      //console.log("Function URL:", functionURL);
-
-      const apiURL = `${import.meta.env.VITE_API_URL}/feedback`;
+      const apiURL = `${import.meta.env.VITE_API_URL}/regenerate`;
 
       const response = await invokeLambda({
         method: "POST",
@@ -102,43 +99,55 @@ const ViewExam: React.FC = () => {
       });
 
 
-      const data = await response.json();
+     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+      //console.log("Function URL:", functionURL);
 
-      // Check if the backend returns the updated content
-      if (data.updatedExamContent) {
-        setExamContent(data.updatedExamContent); // Update the entire exam content
-      }
-
-      if (data.totalMarks) {
-        setMark(data.totalMarks); // Update the total marks
-      }
-
-      if (data.updatedExamContent || data.totalMarks) {
-        // Refresh the page after the success message
-        window.location.reload();
-      } else {
+     // const response = await invokeLambda({
+        //method: "POST",
+       // body: requestBody,
+       // url: functionURL,
+      //});
+        const data = await response.json();
+      
+        if (data.newExamContent) {
+          const parsed =
+            typeof data.newExamContent === "string"
+              ? JSON.parse(data.newExamContent)
+              : data.newExamContent;
+      
+          setExamContent(parsed);
+        }
+      
+        if (data.totalMarks) {
+          setMark(data.totalMarks);
+        }
+      
+        if (data.newExamContent || data.totalMarks) {
+          window.location.reload();
+        } else {
+          showAlert({
+            type: "failure",
+            message: "No changes made",
+          });
+        }
+      } catch (error) {
+        console.error("Error sending feedback:", error);
         showAlert({
           type: "failure",
-          message: "No changes made",
+          message: "Failed to load",
         });
+      } finally {
+        setLoadingChangeState(false);
       }
-    } catch (error) {
-      console.error("Error sending feedback:", error);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
-    } finally {
-      setLoadingChangeState(false);
-    }
   };
+
 
   // Fetch initial data
   const fetchInitialData = async () => {
     try {
       //@ts-ignore
       const response = await invokeApig({
-        path: `/ViewExam/${id}`, // Adjust path as needed
+        path: `/examForm/${id}`, // Adjust path as needed
         method: "GET",
       });
 
@@ -155,7 +164,7 @@ const ViewExam: React.FC = () => {
       console.log("Initial Data Loaded:", response);
 
       if (response.examState === "building") {
-        navigate("/dashboard/ViewExam/" + id);
+        navigate("/dashboard/examForm/" + id);
       }
 
       content = response.examContent;
@@ -1839,5 +1848,4 @@ const ViewExam: React.FC = () => {
     </div>
   );
 };
-
 export default ViewExam;
