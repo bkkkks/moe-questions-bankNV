@@ -90,14 +90,17 @@ const ViewExam: React.FC = () => {
     try {
       setLoadingChangeState(true);
 
-      const functionURL = `${import.meta.env.VITE_API_URL}/feedback`;
-      console.log("Function URL:", functionURL);
+     // const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+      //console.log("Function URL:", functionURL);
+
+      const apiURL = `${import.meta.env.VITE_API_URL}/createNewExam`;
 
       const response = await invokeLambda({
         method: "POST",
         body: requestBody,
-        url: functionURL,
+        url: apiURL,
       });
+
 
       const data = await response.json();
 
@@ -161,7 +164,17 @@ const ViewExam: React.FC = () => {
 
       if (typeof content === "string") {
         try {
-          const parsedContent = JSON.parse(content);
+          //const parsedContent = JSON.parse(content);
+          let cleaned = content.trim();
+          if (cleaned.startsWith("```json")) {
+            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
+          }
+          const jsonStart = cleaned.indexOf("{");
+          if (jsonStart === -1) throw new Error("Missing JSON object start");
+          
+          const cleanJson = cleaned.slice(jsonStart).trim();
+          const parsedContent = JSON.parse(cleanJson);
+
           setExamContent(parsedContent);
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
