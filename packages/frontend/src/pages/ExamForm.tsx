@@ -90,13 +90,14 @@ const ExamForm: React.FC = () => {
       
       if (!response || !response.examContent) {
         pollAttempts++;
+        
+        if (pollAttempts === 1) {
+          showAlert({
+            type: "info",
+            message: "جاري إنشاء الامتحان، يرجى الانتظار...",
+          });
+        }
         if (pollAttempts < MAX_ATTEMPTS) {
-           if (pollAttempts > 1) {
-            showAlert({
-              type: "info",
-              message: "جاري إنشاء الامتحان، يرجى الانتظار...",
-            });
-          }
           setTimeout(fetchInitialData, 10000);
         } else {
           showAlert({
