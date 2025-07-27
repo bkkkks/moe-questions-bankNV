@@ -184,7 +184,14 @@ const ViewExam: React.FC = () => {
           const cleanJson = cleaned.slice(jsonStart).trim();
           const parsedContent = JSON.parse(cleanJson);
 
-          setExamContent(parsedContent);
+          //setExamContent(parsedContent);
+          if (!Array.isArray(parsedContent.sections)) {
+          console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
+          parsedContent.sections = [];
+        }
+        setExamContent(parsedContent);
+
+          
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
           showAlert({
@@ -195,7 +202,13 @@ const ViewExam: React.FC = () => {
         }
       } else if (typeof content === "object") {
         console.log("is object");
-        setExamContent(content); // Set directly if already an object
+        //setExamContent(content); // Set directly if already an object
+        if (!Array.isArray(content.sections)) {
+        console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
+        content.sections = [];
+      }
+      setExamContent(content);
+
       } else {
         console.error("Unexpected examContent format:", typeof content);
         showAlert({
@@ -274,6 +287,11 @@ const ViewExam: React.FC = () => {
             .trim();
           console.log("Extracted JSON String:", jsonString);
           parsedContent = JSON.parse(jsonString); // Parse the JSON object
+          if (!Array.isArray(parsedContent.sections)) {
+          console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
+          parsedContent.sections = [];
+        }
+
         } else {
           throw new Error("No valid JSON found in examContent string.");
         }
