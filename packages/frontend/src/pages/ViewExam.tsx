@@ -287,9 +287,9 @@ const ViewExam: React.FC = () => {
             .trim();
           console.log("Extracted JSON String:", jsonString);
           parsedContent = JSON.parse(jsonString); // Parse the JSON object
-          if (!Array.isArray(parsedContent.sections)) {
+          if (!Array.isArray((content as any).sections)) {
           console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
-          parsedContent.sections = [];
+          (content as any).sections = [];
         }
 
         } else {
