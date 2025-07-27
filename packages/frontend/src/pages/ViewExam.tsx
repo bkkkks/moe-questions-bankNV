@@ -203,9 +203,9 @@ const ViewExam: React.FC = () => {
       } else if (typeof content === "object") {
         console.log("is object");
         //setExamContent(content); // Set directly if already an object
-        if (!Array.isArray(content.sections)) {
+        if (!Array.isArray((content as any).sections)) {
         console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
-        content.sections = [];
+        (content as any).sections = [];
       }
       setExamContent(content);
 
