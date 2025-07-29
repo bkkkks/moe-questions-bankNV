@@ -272,64 +272,60 @@ const ViewExam: React.FC = () => {
     }
   }, [examContent]);
 
-  const fetchExamContent = async () => {
-    try {
-      //@ts-ignore
-      const response = await invokeApig({
-        path: `/examForm/${id}`,
-        method: "GET",
-      });
+const fetchExamContent = async () => {
+  try {
+    // طلب البيانات من الـ API
+    const response = await invokeApig({
+      path: `/examForm/${id}`,
+      method: "GET",
+    });
 
+    const content = response.examContent;
+    console.log("Raw Exam Content from Backend:", content);
 
-      console.log("Raw Exam Content from Backend:", response.examContent);
+    // إذا لا يوجد محتوى
+    if (!content) {
+      showAlert({ type: "failure", message: "Failed to load" });
+      return;
+    }
 
-      if (!response.examContent) {
-        showAlert({
-          type: "failure",
-          message: "Failed to load",
-        });
-        return;
-      }
+    // إذا كان المحتوى كائنًا (Map) قادمًا من DynamoDB، استخدمه مباشرة
+    if (typeof content === "object") {
+      setExamContent(content);
+      console.log("Exam content is object; set directly.");
+      return;
+    }
 
-      let parsedContent;
+    // إذا كان المحتوى نصًا، ابحث عن JSON بداخله وحوله
+    if (typeof content === "string") {
       try {
-        // Extract the JSON portion from the descriptive text
-        const jsonStartIndex = response.examContent.indexOf("{");
-        const jsonEndIndex = response.examContent.lastIndexOf("}");
+        const jsonStartIndex = content.indexOf("{");
+        const jsonEndIndex = content.lastIndexOf("}");
         if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-          const jsonString = response.examContent
-            .substring(jsonStartIndex, jsonEndIndex + 1)
-            .trim();
+          const jsonString = content.substring(jsonStartIndex, jsonEndIndex + 1).trim();
           console.log("Extracted JSON String:", jsonString);
-          parsedContent = JSON.parse(jsonString); // Parse the JSON object
+          const parsedContent = JSON.parse(jsonString);
+          setExamContent(parsedContent);
+          console.log("Parsed exam content successfully set.");
+          return;
         } else {
           throw new Error("No valid JSON found in examContent string.");
         }
-      } catch (error) {
-        console.error(
-          "Failed to parse exam content as JSON:",
-          response.examContent
-        );
-        showAlert({
-          type: "failure",
-          message: "Failed to load",
-        });
+      } catch (err) {
+        console.error("Failed to parse exam content as JSON:", content);
+        showAlert({ type: "failure", message: "Failed to load" });
         return;
       }
-
-      setExamContent(parsedContent);
-      console.log(
-        "Parsed Exam Content Successfully Set in State:",
-        parsedContent
-      );
-    } catch (error) {
-      console.error("Error fetching exam content:", error);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
     }
-  };
+
+    // إذا وصلنا هنا فهذا يعني أن النوع غير متوقع
+    showAlert({ type: "failure", message: "Invalid exam format" });
+  } catch (error) {
+    console.error("Error fetching exam content:", error);
+    showAlert({ type: "failure", message: "Failed to load" });
+  }
+};
+
 
   useEffect(() => {
     const loadExamContent = async () => {
