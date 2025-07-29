@@ -272,13 +272,13 @@ const ViewExam: React.FC = () => {
     }
   }, [examContent]);
 
-const fetchExamContent = async () => {
-  try {
-    // طلب البيانات من الـ API
-    const response = await invokeApig({
-      path: `/examForm/${id}`,
-      method: "GET",
-    });
+  const fetchExamContent = async () => {
+    try {
+      //@ts-ignore
+      const response = await invokeApig({
+        path: `/examForm/${id}`,
+        method: "GET",
+      });
 
     const content = response.examContent;
     console.log("Raw Exam Content from Backend:", content);
