@@ -354,10 +354,8 @@ const ExamForm: React.FC = () => {
 
       const response = await fetch(functionURL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+        body: requestBody,
+        url: functionURL,
       });
   
       console.log("API Response:", response);
