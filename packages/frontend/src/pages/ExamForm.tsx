@@ -345,7 +345,7 @@ const ExamForm: React.FC = () => {
     };
   
     console.log("Submitting Feedback Request:", requestBody);
-  
+  /*
     try {
       setLoading(true);
 
@@ -367,6 +367,47 @@ const ExamForm: React.FC = () => {
       // Check if the backend returns the updated content
       if (data.updatedExamContent) {
         setExamContent(data.updatedExamContent); // Update the entire exam content
+      }
+      */
+        try {
+      setLoading(true);
+
+    //  const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
+      //console.log("Function URL:", functionURL);
+
+      //const response = await fetch(functionURL, {
+        //method: "POST",
+        //headers: {
+         // "Content-Type": "application/json",
+        //},
+        //body: JSON.stringify(requestBody),
+      const token = await getUserToken(currentUser);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/createNewExam`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(requestBody),
+      
+      });
+      console.log("API Response:", response);
+      const data = await response.json();
+  
+      // Check if the backend returns the updated content
+         // if (data.newExamContent) {
+         //   setExamContent(data.newExamContent); // Update the entire exam content
+        //  }
+      try {
+        const cleaned = data.newExamContent.trim();
+        const jsonStart = cleaned.indexOf("{");
+        const cleanJson = cleaned.slice(jsonStart).trim();
+        const parsed = JSON.parse(cleanJson);
+        setExamContent(parsed);
+      } catch (err) {
+        console.error("Failed to parse updated exam content", data.newExamContent);
+        showAlert({ type: "failure", message: "Invalid exam format after update." });
+        return; // مهم: لا تكمل بعد فشل التحليل
       }
   
       if (data.totalMarks) {
