@@ -184,14 +184,7 @@ const ViewExam: React.FC = () => {
           const cleanJson = cleaned.slice(jsonStart).trim();
           const parsedContent = JSON.parse(cleanJson);
 
-          //setExamContent(parsedContent);
-          if (!Array.isArray(parsedContent.sections)) {
-          console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
-          parsedContent.sections = [];
-        }
-        setExamContent(parsedContent);
-
-          
+          setExamContent(parsedContent);
         } catch (parseError) {
           console.error("Failed to parse exam content as JSON:", content);
           showAlert({
@@ -202,13 +195,7 @@ const ViewExam: React.FC = () => {
         }
       } else if (typeof content === "object") {
         console.log("is object");
-        //setExamContent(content); // Set directly if already an object
-        if (!Array.isArray((content as any).sections)) {
-        console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
-        (content as any).sections = [];
-      }
-      setExamContent(content);
-
+        setExamContent(content); // Set directly if already an object
       } else {
         console.error("Unexpected examContent format:", typeof content);
         showAlert({
@@ -265,6 +252,7 @@ const ViewExam: React.FC = () => {
         method: "GET",
       });
 
+
       console.log("Raw Exam Content from Backend:", response.examContent);
 
       if (!response.examContent) {
@@ -275,46 +263,37 @@ const ViewExam: React.FC = () => {
         return;
       }
 
-      // Robustly handle both object (Map) and string
-      if (typeof response.examContent === "object") {
-        if (!Array.isArray(response.examContent.sections)) {
-          console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
-          response.examContent.sections = [];
+      let parsedContent;
+      try {
+        // Extract the JSON portion from the descriptive text
+        const jsonStartIndex = response.examContent.indexOf("{");
+        const jsonEndIndex = response.examContent.lastIndexOf("}");
+        if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+          const jsonString = response.examContent
+            .substring(jsonStartIndex, jsonEndIndex + 1)
+            .trim();
+          console.log("Extracted JSON String:", jsonString);
+          parsedContent = JSON.parse(jsonString); // Parse the JSON object
+        } else {
+          throw new Error("No valid JSON found in examContent string.");
         }
-        setExamContent(response.examContent);
+      } catch (error) {
+        console.error(
+          "Failed to parse exam content as JSON:",
+          response.examContent
+        );
+        showAlert({
+          type: "failure",
+          message: "Failed to load",
+        });
         return;
       }
 
-      if (typeof response.examContent === "string") {
-        try {
-          let cleaned = response.examContent.trim();
-          if (cleaned.startsWith("```json")) {
-            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
-          }
-          const jsonStart = cleaned.indexOf("{");
-          if (jsonStart === -1) throw new Error("Missing JSON object start");
-          const cleanJson = cleaned.slice(jsonStart).trim();
-          const parsedContent = JSON.parse(cleanJson);
-          if (!Array.isArray(parsedContent.sections)) {
-            parsedContent.sections = [];
-          }
-          setExamContent(parsedContent);
-        } catch (error) {
-          console.error("Failed to parse exam content as JSON:", response.examContent);
-          showAlert({
-            type: "failure",
-            message: "Failed to load",
-          });
-        }
-        return;
-      }
-
-      // Unknown type
-      console.error("Unexpected examContent type:", typeof response.examContent);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
+      setExamContent(parsedContent);
+      console.log(
+        "Parsed Exam Content Successfully Set in State:",
+        parsedContent
+      );
     } catch (error) {
       console.error("Error fetching exam content:", error);
       showAlert({
@@ -350,58 +329,13 @@ const ViewExam: React.FC = () => {
       } catch (error) {
         console.error("Error fetching initial data:", error);
         if (!isCancelled) {
-        showAlert({
-          type: "failure",
-          message: "Failed to load",
-        });
-            if(!response.examContent) {
-        console.error("examContent is missing");
-        setExamContent(null);
-        return;
-      }
-
-      // إذا كان examContent كائن (Map من DynamoDB)
-      if (typeof response.examContent === "object") {
-        // تأكد أن sections مصفوفة
-        if (!Array.isArray(response.examContent.sections)) {
-          console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
-          response.examContent.sections = [];
-        }
-        setExamContent(response.examContent);
-        console.log("Set examContent as object (Map)", response.examContent);
-        return;
-      }
-
-      // إذا كان examContent نص (string)
-      if (typeof response.examContent === "string") {
-        try {
-          let cleaned = response.examContent.trim();
-          if (cleaned.startsWith("```json")) {
-            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
-          }
-          const jsonStart = cleaned.indexOf("{");
-          if (jsonStart === -1) throw new Error("Missing JSON object start");
-          const cleanJson = cleaned.slice(jsonStart).trim();
-          const parsedContent = JSON.parse(cleanJson);
-          if (!Array.isArray(parsedContent.sections)) {
-            console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
-            parsedContent.sections = [];
-          }
-          setExamContent(parsedContent);
-          console.log("Parsed examContent from string", parsedContent);
-        } catch (error) {
-          console.error("Failed to parse exam content as JSON:", response.examContent);
-          setExamContent(null);
-        }
-        return;
-      }
-
-      // إذا كان النوع غير معروف
-      console.error("Unexpected examContent type:", typeof response.examContent);
-      setExamContent(null);
+          showAlert({
+            type: "failure",
+            message: "Failed to load",
+          });
         }
       }
-    //}, 2000); // 2-second delay
+    }, 2000); // 2-second delay
 
     // Cleanup function to handle component unmount
     return () => {
@@ -1914,5 +1848,4 @@ const ViewExam: React.FC = () => {
     </div>
   );
 };
-
 export default ViewExam;
