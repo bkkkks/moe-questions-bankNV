@@ -349,7 +349,7 @@ const ExamForm: React.FC = () => {
     try {
       setLoading(true);
 
-      const functionURL = `${import.meta.env.VITE_API_URL}/feedback`;
+      const functionURL = `${import.meta.env.VITE_API_URL}/createNewExam`;
       console.log("Function URL:", functionURL);
 
       const response = await fetch(functionURL, {
