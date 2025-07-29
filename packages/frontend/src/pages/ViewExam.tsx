@@ -307,7 +307,7 @@ const ViewExam: React.FC = () => {
         return;
       }
 
-      setExamContent(parsedContent);
+      /*setExamContent(parsedContent);
       console.log(
         "Parsed Exam Content Successfully Set in State:",
         parsedContent
@@ -350,10 +350,55 @@ const ViewExam: React.FC = () => {
           showAlert({
             type: "failure",
             message: "Failed to load",
-          });
+          });*/
+            if(!response.examContent) {
+        console.error("examContent is missing");
+        setExamContent(null);
+        return;
+      }
+
+      // إذا كان examContent كائن (Map من DynamoDB)
+      if (typeof response.examContent === "object") {
+        // تأكد أن sections مصفوفة
+        if (!Array.isArray(response.examContent.sections)) {
+          console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
+          response.examContent.sections = [];
+        }
+        setExamContent(response.examContent);
+        console.log("Set examContent as object (Map)", response.examContent);
+        return;
+      }
+
+      // إذا كان examContent نص (string)
+      if (typeof response.examContent === "string") {
+        try {
+          let cleaned = response.examContent.trim();
+          if (cleaned.startsWith("```json")) {
+            cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
+          }
+          const jsonStart = cleaned.indexOf("{");
+          if (jsonStart === -1) throw new Error("Missing JSON object start");
+          const cleanJson = cleaned.slice(jsonStart).trim();
+          const parsedContent = JSON.parse(cleanJson);
+          if (!Array.isArray(parsedContent.sections)) {
+            console.warn("⚠️ 'sections' is not array, defaulting to empty array.");
+            parsedContent.sections = [];
+          }
+          setExamContent(parsedContent);
+          console.log("Parsed examContent from string", parsedContent);
+        } catch (error) {
+          console.error("Failed to parse exam content as JSON:", response.examContent);
+          setExamContent(null);
+        }
+        return;
+      }
+
+      // إذا كان النوع غير معروف
+      console.error("Unexpected examContent type:", typeof response.examContent);
+      setExamContent(null);
         }
       }
-    }, 2000); // 2-second delay
+    //}, 2000); // 2-second delay
 
     // Cleanup function to handle component unmount
     return () => {
