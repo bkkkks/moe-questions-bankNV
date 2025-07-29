@@ -8,9 +8,6 @@ import { getCurrentUserEmail } from "../lib/getToken.ts";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
 import { useAlert } from "../components/AlertComponent.tsx";
 import SpeechRecorder from "../components/SpeechRecorder.tsx";
-import { getUserToken } from "../lib/getToken";
-
-
 
 
 interface Part {
@@ -75,12 +72,13 @@ const ExamForm: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { showAlert } = useAlert();
-
+  const { showAlert, closeAlert} = useAlert();
   
 
-
-
+  
+  let pollAttempts = 0;
+  const MAX_ATTEMPTS = 30; // 3 دقائق
+  
   // Fetch Initial Data
   const fetchInitialData = async () => {
     try {
@@ -89,13 +87,25 @@ const ExamForm: React.FC = () => {
         path: `/examForm/${id}`, // Adjust path as needed
         method: "GET",
       });
-
-      if (!response || Object.keys(response).length === 0) {
-        console.error("Response is empty or undefined:", response);
-        showAlert({
-          type: "failure",
-          message: "Invalid exam format",
-        });
+      
+      if (!response || !response.examContent) {
+        pollAttempts++;
+        
+        if (pollAttempts === 1) {
+          showAlert({
+            type: "info",
+            message: "جاري إنشاء الامتحان، يرجى الانتظار...",
+          });
+        }
+        if (pollAttempts < MAX_ATTEMPTS) {
+          setTimeout(fetchInitialData, 10000);
+        } else {
+          showAlert({
+            type: "failure",
+            message: "انتهى الوقت ولم يتم إنشاء الامتحان. حاول لاحقاً.",
+          });
+          setLoadingPage(false);
+        }
         return;
       }
 
@@ -103,41 +113,44 @@ const ExamForm: React.FC = () => {
 
       const content = response.examContent;
 
-      // if (response.examSubject !== "ARAB101") {
-        // Parse examContent if it's a string
-        if (typeof content === "string") {
-          try {
-            //const parsedContent = JSON.parse(content);
-            let cleaned = content.trim();
-            if (cleaned.startsWith("```json")) {
-              cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
-            }
-            const jsonStart = cleaned.indexOf("{");
-            const cleanJson = cleaned.slice(jsonStart).trim();
-            const parsedContent = JSON.parse(cleanJson);
-
-            setExamContent(parsedContent);
-          } catch (parseError) {
-            console.error("Failed to parse exam content as JSON:", content);
-            showAlert({
-              type:"failure",
-              message: "Invalid exam format"
-            })
-            return;
-          }
-        } else if (typeof content === "object") {
-          setExamContent(content); // Set directly if already an object
-        } else {
-          console.error("Unexpected examContent format:", typeof content);
+      if (typeof content === "string") {
+        try {
+          const parsedContent = JSON.parse(content);
+          setExamContent(parsedContent);
+          showAlert({
+            type: "success",
+            message: "تم تحميل الامتحان بنجاح"
+          });
+          setTimeout(() => {
+            closeAlert();
+          }, 2000);
+        } catch (parseError) {
+          console.error("Failed to parse exam content as JSON:", content);
           showAlert({
             type: "failure",
-            message: "Invalid exam format",
+            message: "Invalid exam format"
           });
+          setLoadingPage(false);
           return;
         }
-      // } else {
-      //   setExamContent(content);
-      // }
+      } else if (typeof content === "object") {
+        setExamContent(content);
+        showAlert({
+          type: "success",
+          message: "تم تحميل الامتحان بنجاح"
+        });
+        setTimeout(() => {
+          closeAlert();
+        }, 2000);
+      } else {
+        console.error("Unexpected examContent format:", typeof content);
+        showAlert({
+          type: "failure",
+          message: "Invalid exam format",
+        });
+        setLoadingPage(false);
+        return;
+      }
 
       // Set metadata fields
       setGrade(response.examClass || "");
@@ -154,6 +167,7 @@ const ExamForm: React.FC = () => {
       if (response.examState !== "building") {
         navigate(`/dashboard/viewExam/${id}`);
       }
+      setLoadingPage(false);
     } catch (err: any) {
       console.error("Error fetching initial data:", err);
       showAlert({
@@ -176,15 +190,15 @@ const ExamForm: React.FC = () => {
 
       console.log("Raw Exam Content from Backend:", response.examContent);
 
-      if (!response.examContent) {
+     /* if (!response.examContent) {
         showAlert({
           type: "failure",
           message: "Failed to load",
-        });
+        });*/
         return;
-      }
+      //}
 
-      //if (response.examSubject !== "ARAB101") {
+      // if (response.examSubject !== "ARAB101") {
 
         let parsedContent;
         try {
@@ -206,17 +220,13 @@ const ExamForm: React.FC = () => {
           });
           return;
         }
-     
       
         setExamContent(parsedContent);
         console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
-    } catch (error) {
-      console.error("Error fetching exam content:", error);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
-    }
+      } catch (error) {
+        console.error("Error fetching exam content:", error);
+        return;
+      }
   };
 
 
@@ -339,51 +349,32 @@ const ExamForm: React.FC = () => {
     try {
       setLoading(true);
 
-    //  const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      //console.log("Function URL:", functionURL);
+      const functionURL = `${import.meta.env.VITE_API_URL}/feedback`;
+      console.log("Function URL:", functionURL);
 
-      //const response = await fetch(functionURL, {
-        //method: "POST",
-        //headers: {
-         // "Content-Type": "application/json",
-        //},
-        //body: JSON.stringify(requestBody),
-      const token = await getUserToken(currentUser);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/createNewExam`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(requestBody),
-      
+      const response = await fetch(functionURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
+  
       console.log("API Response:", response);
+
       const data = await response.json();
   
       // Check if the backend returns the updated content
-         // if (data.newExamContent) {
-         //   setExamContent(data.newExamContent); // Update the entire exam content
-        //  }
-      try {
-        const cleaned = data.newExamContent.trim();
-        const jsonStart = cleaned.indexOf("{");
-        const cleanJson = cleaned.slice(jsonStart).trim();
-        const parsed = JSON.parse(cleanJson);
-        setExamContent(parsed);
-      } catch (err) {
-        console.error("Failed to parse updated exam content", data.newExamContent);
-        showAlert({ type: "failure", message: "Invalid exam format after update." });
-        return; // مهم: لا تكمل بعد فشل التحليل
+      if (data.updatedExamContent) {
+        setExamContent(data.updatedExamContent); // Update the entire exam content
       }
-
   
       if (data.totalMarks) {
         setMark(data.totalMarks); // Update the total marks
       }
   
       // // Provide feedback to the user
-      if (data.newExamContent || data.totalMarks) {
+      if (data.updatedExamContent || data.totalMarks) {
         // Refresh the page after the success message
         window.location.reload();
       } else {
@@ -392,7 +383,6 @@ const ExamForm: React.FC = () => {
           message: "Changes applied",
         });
       }
-
   
       // Clear the feedback fields after submission
       setFeedback({});
