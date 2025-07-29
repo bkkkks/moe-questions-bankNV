@@ -170,7 +170,7 @@ const ViewExam: React.FC = () => {
       content = response.examContent;
 
       console.log(content);
-
+      /*
       if (typeof content === "string") {
         try {
           //const parsedContent = JSON.parse(content);
@@ -203,7 +203,35 @@ const ViewExam: React.FC = () => {
           message: "Invalid exam format",
         });
         return;
+      }*/
+      if (content && typeof content === "object") {
+      // إذا جاء من DynamoDB كـ Map/Object، استخدمه مباشرة
+      setExamContent(content);
+    } else if (typeof content === "string") {
+      // إذا كان نصًا، عالج الأقواس الثلاثية وجرّب تحويله لـ JSON صحيح
+      let cleaned = content.trim();
+      if (cleaned.startsWith("```json")) {
+        cleaned = cleaned.replace(/^```json/, "").replace(/```$/, "").trim();
       }
+      const jsonStart = cleaned.indexOf("{");
+      if (jsonStart === -1) {
+        console.error("Missing JSON object start");
+        showAlert({ type: "failure", message: "Invalid exam format" });
+        return;
+      }
+      try {
+        const parsedContent = JSON.parse(cleaned.slice(jsonStart).trim());
+        setExamContent(parsedContent);
+      } catch (parseError) {
+        console.error("Failed to parse exam content as JSON:", content);
+        showAlert({ type: "failure", message: "Invalid exam format" });
+        return;
+      }
+    } else {
+      console.error("Unexpected examContent format:", typeof content);
+      showAlert({ type: "failure", message: "Invalid exam format" });
+      return;
+    }
 
       setGrade(response.examClass || "");
       setSubject(response.examSubject || "");
