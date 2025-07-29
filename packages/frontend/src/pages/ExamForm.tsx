@@ -354,7 +354,7 @@ const ExamForm: React.FC = () => {
 
       const response = await fetch(functionURL, {
         method: "POST",
-        body: requestBody,
+        body: JSON.stringify(requestBody),
         url: functionURL,
       });
   
