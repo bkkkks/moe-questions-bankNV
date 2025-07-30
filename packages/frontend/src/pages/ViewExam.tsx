@@ -90,7 +90,7 @@ const ViewExam: React.FC = () => {
     try {
       setLoadingChangeState(true);
 
-      const apiURL = `${import.meta.env.VITE_API_URL}/regenerate`;
+      const apiURL = `${import.meta.env.VITE_API_URL}/createNewExam`;
 
       const response = await invokeLambda({
         method: "POST",
