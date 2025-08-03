@@ -40,6 +40,7 @@ interface ExamContent {
   [key: string]: any;
 }
 
+
 const ViewExam: React.FC = () => {
   const [grade, setGrade] = useState("");
   const [subject, setSubject] = useState("");
