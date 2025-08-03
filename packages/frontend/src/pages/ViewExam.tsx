@@ -109,36 +109,33 @@ const ViewExam: React.FC = () => {
       //});
         const data = await response.json();
       
-        if (data.newExamContent) {
-          const parsed =
-            typeof data.newExamContent === "string"
-              ? JSON.parse(data.newExamContent)
-              : data.newExamContent;
-      
-          setExamContent(parsed);
-        }
-      
-        if (data.totalMarks) {
-          setMark(data.totalMarks);
-        }
-      
-        if (data.newExamContent || data.totalMarks) {
-          window.location.reload();
-        } else {
-          showAlert({
-            type: "failure",
-            message: "No changes made",
-          });
-        }
-      } catch (error) {
-        console.error("Error sending feedback:", error);
+      // Check if the backend returns the updated content
+      if (data.updatedExamContent) {
+        setExamContent(data.updatedExamContent); // Update the entire exam content
+      }
+
+      if (data.totalMarks) {
+        setMark(data.totalMarks); // Update the total marks
+      }
+
+      if (data.updatedExamContent || data.totalMarks) {
+        // Refresh the page after the success message
+        window.location.reload();
+      } else {
         showAlert({
           type: "failure",
-          message: "Failed to load",
+          message: "No changes made",
         });
-      } finally {
-        setLoadingChangeState(false);
       }
+    } catch (error) {
+      console.error("Error sending feedback:", error);
+      showAlert({
+        type: "failure",
+        message: "Failed to load",
+      });
+    } finally {
+      setLoadingChangeState(false);
+    }
   };
 
 
