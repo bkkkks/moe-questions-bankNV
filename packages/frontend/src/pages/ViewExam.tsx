@@ -95,7 +95,7 @@ const ViewExam: React.FC = () => {
 
       const response = await invokeLambda({
         method: "POST",
-        body: requestBody,
+        body: JSON.stringify(requestBody),
         url: apiURL,
       });
 
