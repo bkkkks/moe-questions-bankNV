@@ -341,10 +341,14 @@ const ExamForm: React.FC = () => {
     }
   
     const requestBody = {
-      examID: id!, // Exam ID
-      feedback: feedbackPayload, // Include all provided feedback
-      contributors: newContributers, // Current user as contributor
+      examID: id!,
+      feedback: Object.entries(approverMsg).map(([section, value]) => ({
+        section,
+        feedback: value
+      })),
+      contributers: contributers
     };
+
   
     console.log("Submitting Feedback Request:", requestBody);
   
