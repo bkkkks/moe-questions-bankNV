@@ -342,7 +342,7 @@ const ExamForm: React.FC = () => {
   
     const requestBody = {
       examID: id!, // Exam ID
-      feedback: feedbackPayload, // Include all provided feedback
+      feedback:JSON.stringify(feedbackPayload), // Include all provided feedback
       contributors: newContributers, // Current user as contributor
     };
   
