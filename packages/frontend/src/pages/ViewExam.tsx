@@ -83,10 +83,14 @@ const ViewExam: React.FC = () => {
 
   const handleFeedbackSubmission = async () => {
     const requestBody = {
-      examID: id!, // Exam ID
-      feedback: approverMsg, // Include all provided feedback
-      contributors: contributers, // Include contributors
+      examID: id!,
+      feedback: Object.entries(approverMsg).map(([section, value]) => ({
+        section,
+        feedback: value
+      })),
+      contributers: contributers
     };
+
 
     try {
       setLoadingChangeState(true);
