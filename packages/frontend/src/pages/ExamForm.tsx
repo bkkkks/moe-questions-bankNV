@@ -340,13 +340,19 @@ const ExamForm: React.FC = () => {
       }
     }
   
+    const cleanedFeedback = feedbackPayload.map(item => ({
+      section: item.section,
+      feedback: typeof item.feedback === 'string' ? item.feedback : JSON.stringify(item.feedback)
+    }));
+    
     const requestBody = {
       examID: id!, // Exam ID
-      feedback: feedbackPayload, // Include all provided feedback
+      feedback: cleanedFeedback, // مصفوفة feedback مضمونة كلها string
       contributors: newContributers, // Current user as contributor
     };
-  
-    console.log("Submitting Feedback Request:", requestBody);
+    
+    // ✅ طباعة واضحة لمراجعة الشكل النهائي قبل الإرسال
+    console.log("📦 Final requestBody to be sent:", JSON.stringify(requestBody, null, 2));
   
     try {
       setLoading(true);
