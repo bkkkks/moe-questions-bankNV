@@ -82,17 +82,11 @@ const ViewExam: React.FC = () => {
   };
 
   const handleFeedbackSubmission = async () => {
-  const requestBody = {
-    examID: id!,
-    feedback: Object.entries(approverMsg).map(([section, value]) => ({
-      section,
-      feedback: typeof value === 'string' ? value : JSON.stringify(value)
-    })),
-    contributers: contributers
-  };
-  
-  // ✅ Log the payload before sending
-  console.log("📦 Final requestBody:", JSON.stringify(requestBody, null, 2));
+    const requestBody = {
+      examID: id!, // Exam ID
+      feedback: approverMsg, // Include all provided feedback
+      contributors: contributers, // Include contributors
+    };
 
 
     try {
