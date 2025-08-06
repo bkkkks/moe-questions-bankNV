@@ -165,7 +165,7 @@ export async function createExam(event) {
             "SET examContent = :examContent, numOfRegenerations = if_not_exists(numOfRegenerations, :zero) + :incr, contributors = :contributors",
             
           ExpressionAttributeValues: {
-            ":examContent": cleanedJson,
+            ":examContent": typeof cleanedJson === "string" ? cleanedJson : JSON.stringify(cleanedJson),
             ":incr": 1,
             ":zero": 0,
             ":contributors": data.contributors,
