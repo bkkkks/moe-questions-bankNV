@@ -182,6 +182,8 @@ export async function createExam(event) {
       statusCode = 500;
       body = { error: "Failed to regenerate exam", details: error.message };
     }
+    console.log("🔥 Error Stack:", error.stack);
+
   } else {
     // Create a new exam
     try {
