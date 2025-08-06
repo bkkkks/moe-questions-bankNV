@@ -276,7 +276,7 @@ export async function createExam(event) {
             examSemester: data.semester,
             examDuration: data.duration,
             examMark: data.total_mark,
-            examContent: cleanedJson,
+            examContent: typeof cleanedJson === "string" ? cleanedJson : JSON.stringify(cleanedJson),
             createdBy: data.created_by,
             creationDate: data.creation_date,
             contributors: data.contributors,
