@@ -176,7 +176,7 @@ export async function createExam(event) {
 
     //const response = await bedrockClient.send(command);
 
-      body = { message: "Exam successfully regenerated", newExamContent: cleanedJson };
+      body = { message: "Exam successfully regenerated", updatedExamContent: cleanedJson };
     } catch (error) {
       console.error("Error regenerating exam:", error);
       statusCode = 500;
