@@ -76,8 +76,13 @@ export async function createExam(event) {
 
       let existingExam;
      
-        existingExam = JSON.parse(result.Item.examContent);
+      existingExam = JSON.parse(result.Item.examContent);
      
+      const cleanedFeedback = data.feedback.map(item => ({
+        section: item.section,
+        feedback: typeof item.feedback === 'string' ? item.feedback : JSON.stringify(item.feedback)
+      }));
+
 
 
        // Build prompt to update exam content
@@ -85,7 +90,8 @@ export async function createExam(event) {
           prompt = `
           Update the following exam based on the feedback provided.
           Ensure that all related information is recalculated to maintain consistency.
-          Feedback: ${JSON.stringify(data.feedback, null , 2)}
+
+          Feedback: ${JSON.stringify(cleanedFeedback, null , 2)}
           
           Current Exam Content:
           ${JSON.stringify(existingExam, null, 2)}
