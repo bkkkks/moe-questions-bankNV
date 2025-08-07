@@ -76,7 +76,11 @@ export async function createExam(event) {
 
       let existingExam;
      
-      existingExam = JSON.parse(result.Item.examContent);
+      //existingExam = JSON.parse(result.Item.examContent);
+      existingExam = typeof result.Item.examContent === "string"
+      ? JSON.parse(result.Item.examContent)
+      : result.Item.examContent;
+
      
       const cleanedFeedback = data.feedback.map(item => ({
         section: item.section,
@@ -265,6 +269,8 @@ export async function createExam(event) {
     console.log("Model done");
     //@ts-ignore
     console.log("cleanedJson size:", Buffer.byteLength(cleanedJson, "utf-8"));
+    console.log("🧠 Item size in bytes:", Buffer.byteLength(JSON.stringify({
+
 
       const uuid = uuidv4();
       await dynamo.send(
