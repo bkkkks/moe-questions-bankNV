@@ -156,7 +156,7 @@ export async function createExam(event) {
         parsed = JSON.parse(cleanedJson);
       } catch (err) {
         console.error("❌ Invalid JSON returned from model:", cleanedJson);
-        throw new Error("Returned content is not valid JSON");
+        throw new Error("Returned content is not valid JSON. Model response: " + cleanedJson);
       }
 
 
@@ -169,7 +169,7 @@ export async function createExam(event) {
             "SET examContent = :examContent, numOfRegenerations = if_not_exists(numOfRegenerations, :zero) + :incr, contributors = :contributors",
             
           ExpressionAttributeValues: {
-            ":examContent": typeof cleanedJson === "string" ? cleanedJson : JSON.stringify(cleanedJson),
+            ":examContent": parsed,
             ":incr": 1,
             ":zero": 0,
             ":contributors": data.contributors,
