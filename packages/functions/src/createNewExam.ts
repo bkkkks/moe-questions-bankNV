@@ -3,7 +3,7 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { APIGatewayProxyEvent } from "aws-lambda";
-//import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import {
   BedrockRuntimeClient,
   ConverseCommand,
@@ -291,12 +291,12 @@ export async function createExam(event) {
     console.log("🧠 Item size in bytes:", Buffer.byteLength(JSON.stringify({
 
 
-      //const uuid = uuidv4();
+      const uuid = uuidv4();
       await dynamo.send(
         new PutCommand({
           TableName: tableName,
           Item: {
-            //examID: uuid
+            examID: uuid
             examState: "building",
             examClass: data.class,
             examSubject: data.subject,
