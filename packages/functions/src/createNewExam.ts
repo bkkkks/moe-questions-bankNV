@@ -291,12 +291,12 @@ export async function createExam(event) {
     console.log("🧠 Item size in bytes:", Buffer.byteLength(JSON.stringify({
 
 
-      const uuid = uuidv4();
+      //const uuid = uuidv4();
       await dynamo.send(
         new PutCommand({
           TableName: tableName,
           Item: {
-            examID: uuidv4()
+            //examID: uuid
             examState: "building",
             examClass: data.class,
             examSubject: data.subject,
