@@ -288,10 +288,10 @@ export async function createExam(event) {
     console.log("Model done");
     //@ts-ignore
     console.log("cleanedJson size:", Buffer.byteLength(cleanedJson, "utf-8"));
-    console.log("🧠 Item size in bytes:", Buffer.byteLength(JSON.stringify({
+    console.log("🧠 Item size in bytes:", Buffer.byteLength(JSON.stringify)
 
 
-      const uuid = uuidv4();
+      const uuid = uuidv4()
       await dynamo.send(
         new PutCommand({
           TableName: tableName,
