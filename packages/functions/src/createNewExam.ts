@@ -296,7 +296,7 @@ export async function createExam(event) {
         new PutCommand({
           TableName: tableName,
           Item: {
-            examID: uuid
+            examID: uuid,
             examState: "building",
             examClass: data.class,
             examSubject: data.subject,
