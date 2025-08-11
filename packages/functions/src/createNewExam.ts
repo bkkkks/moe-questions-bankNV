@@ -149,7 +149,7 @@ export async function createExam(event) {
       }
       
       // استخرج النص بين الأقواس
-      const cleanedJson = fullText.slice(jsonStart, jsonEnd + 1).trim();
+     /* const cleanedJson = fullText.slice(jsonStart, jsonEnd + 1).trim();
       
       let parsed;
       try {
@@ -158,7 +158,26 @@ export async function createExam(event) {
         console.error("❌ Invalid JSON returned from model:", cleanedJson);
         throw new Error("Returned content is not valid JSON. Model response: " + cleanedJson);
       }
+      */
+      const cleanedJson = fullText.slice(jsonStart, jsonEnd + 1).trim();
 
+      // تحقق إضافي قبل JSON.parse
+      if (
+        cleanedJson.includes("[object Object]") ||
+        !cleanedJson.startsWith("{") ||
+        !cleanedJson.endsWith("}")
+      ) {
+        console.error("❌ Model response is not valid JSON:", cleanedJson);
+        throw new Error("Model response is not valid JSON: " + cleanedJson);
+      }
+      
+      let parsed;
+      try {
+        parsed = JSON.parse(cleanedJson);
+      } catch (err) {
+        console.error("❌ Invalid JSON returned from model:", cleanedJson);
+        throw new Error("Returned content is not valid JSON. Model response: " + cleanedJson);
+      }
 
 
       await dynamo.send(
