@@ -76,8 +76,8 @@ export async function createExam(event) {
 
       let existingExam;
      
-      existingExam = JSON.parse(result.Item.examContent);
-      /*existingExam = typeof result.Item.examContent === "string"
+      //existingExam = JSON.parse(result.Item.examContent);
+      existingExam = typeof result.Item.examContent === "string"
       ? JSON.parse(result.Item.examContent)
       : result.Item.examContent;
 
@@ -87,7 +87,7 @@ export async function createExam(event) {
         feedback: typeof item.feedback === 'string' ? item.feedback : JSON.stringify(item.feedback)
       }));
 
-      */
+      
 
        // Build prompt to update exam content
       if (data.feedback) {
