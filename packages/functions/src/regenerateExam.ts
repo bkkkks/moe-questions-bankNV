@@ -87,7 +87,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        newExamContent: responseText,
+        updatedExamContent: responseText,
       }),
     };
   } catch (error) {
