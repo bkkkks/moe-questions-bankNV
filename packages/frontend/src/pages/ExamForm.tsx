@@ -95,7 +95,7 @@ const ExamForm: React.FC = () => {
         
         if (pollAttempts === 1) {
           showAlert({
-            type: "info",
+            type: "progress",
             message: "جاري إنشاء الامتحان، يرجى الانتظار...",
           });
         }
