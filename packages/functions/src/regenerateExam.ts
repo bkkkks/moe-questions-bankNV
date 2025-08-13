@@ -46,7 +46,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
 
 
       This is the exam to modify: 
-      ${exam}
+      ${JSON.stringify(exam)}
       the type of your response should be JSON OBJECT ONLY
     `;
 
