@@ -67,7 +67,10 @@ export async function regenerate(event: APIGatewayProxyEvent) {
     const response = await client.send(command);
 
     // Extract and print the response text.
-    const responseText = response.output.message.content[0].text;
+    const responseText = (response.output?.message?.content ?? [])
+    .map((c: any) => c?.text)
+    .find((t: string) => typeof t === "string" && t.trim().length > 0) ?? "";
+
 
 
     await dynamo.send(
