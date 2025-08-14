@@ -11,14 +11,12 @@ const client = new BedrockRuntimeClient({ region: "us-east-1" });
 const modelId = "anthropic.claude-instant-v1";
 
 const dbClient = new DynamoDBClient({});
-
 const dynamo = DynamoDBDocumentClient.from(dbClient);
 
 export async function regenerate(event: APIGatewayProxyEvent) {
-  const tableName = "bank-moe-questions-bank-Exams"
+  const tableName = "bank-moe-questions-bank-Exams";
   let data;
 
-  //Handle empty body
   if (!event.body) {
     return {
       statusCode: 404,
@@ -34,21 +32,17 @@ export async function regenerate(event: APIGatewayProxyEvent) {
   const contributors = data.contributors;
   const discription = data.description;
 
-
-
-
   try {
     const prompt = `
       As a school exam generator, you will be given an exam that you will have to change based on the
-      user's discription. Change only what the user asked for. Return only the newly modified exam.
+      user's description. Change only what the user asked for. Return only the newly modified exam as a valid JSON object.
       
-
-      This is the user's discription and changes to do: ${discription}.
-
+      This is the user's description: ${discription}
 
       This is the exam to modify: 
       ${JSON.stringify(exam)}
-      the type of your response should be JSON OBJECT ONLY
+
+      Return ONLY the JSON object. No text explanation.
     `;
 
     const conversation = [
@@ -66,23 +60,43 @@ export async function regenerate(event: APIGatewayProxyEvent) {
 
     const response = await client.send(command);
 
-    // Extract and print the response text.
-    const responseText = (response.output?.message?.content ?? [])
-    .map((c: any) => c?.text)
-    .find((t: string) => typeof t === "string" && t.trim().length > 0) ?? "";
+    const responseText =
+      (response.output?.message?.content ?? [])
+        .map((c: any) => c?.text)
+        .find((t: string) => typeof t === "string" && t.trim().length > 0) ?? "";
 
+    // ✅ Validate that the response is a valid JSON object
+    let parsedExamContent;
+    try {
+      parsedExamContent = JSON.parse(responseText);
 
+      if (
+        typeof parsedExamContent !== "object" ||
+        !parsedExamContent.sections ||
+        !Array.isArray(parsedExamContent.sections)
+      ) {
+        throw new Error("Invalid exam structure");
+      }
+    } catch (parseError) {
+      console.error("❌ Invalid examContent received from model", responseText);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: true,
+          message: "The model response is not a valid examContent JSON object.",
+        }),
+      };
+    }
 
+    // ✅ Only now update the DynamoDB table
     await dynamo.send(
       new UpdateCommand({
         TableName: tableName,
-        Key: {
-          examID: examID, // Primary key to find the item
-        },
-        UpdateExpression: "SET examContent = :examContent, contributors = :contributors", // Update only examState
+        Key: { examID },
+        UpdateExpression: "SET examContent = :examContent, contributors = :contributors",
         ExpressionAttributeValues: {
-          ":examContent": responseText,
-          ":contributors": contributors,    // New value for examState
+          ":examContent": parsedExamContent,
+          ":contributors": contributors,
         },
       })
     );
@@ -91,7 +105,7 @@ export async function regenerate(event: APIGatewayProxyEvent) {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        updatedExamContent: responseText,
+        updatedExamContent: parsedExamContent,
       }),
     };
   } catch (error) {
