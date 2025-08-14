@@ -28,27 +28,12 @@ export async function regenerate(event: APIGatewayProxyEvent) {
 
   data = JSON.parse(event.body);
   console.log(event.body);
-/*
+
   const examID = data.examID;
   const exam = data.examContent;
   const contributors = data.contributors;
   const discription = data.description;
-*/
 
-  // feedback -> description (نحوّل المصفوفة إلى نص واضح)
-const feedbackArr = Array.isArray(data.feedback) ? data.feedback : [];
-const description =
-  data.description ??
-  data.discription ??
-  (feedbackArr.length
-    ? `Apply the following changes:\n` +
-      feedbackArr
-        .map((f: any, i: number) => `#${i + 1} [${f.section ?? "unknown"}]: ${f.feedback ?? ""}`)
-        .join("\n")
-    : undefined);
-
-  const contributors = data.contributors ?? [];
-  const examID = data.examID ?? data.id ?? data.examId;
 
 
 
