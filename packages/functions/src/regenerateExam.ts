@@ -1,102 +1,251 @@
 import {
+  DynamoDBClient
+} from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { APIGatewayProxyEvent } from "aws-lambda";
+import { v4 as uuidv4 } from "uuid";
+import {
   BedrockRuntimeClient,
   ConverseCommand,
 } from "@aws-sdk/client-bedrock-runtime";
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  BedrockAgentRuntimeClient,
+  RetrieveCommand,
+} from "@aws-sdk/client-bedrock-agent-runtime";
+import { ENG102PROMPT } from "./prompts/Eng102";
+import { ARAB101PROMPT } from "./prompts/Arab101";
 
-const client = new BedrockRuntimeClient({ region: "us-east-1" });
 
-const modelId = "anthropic.claude-instant-v1";
+const client = new DynamoDBClient({
+  region: "us-east-1",
+  maxAttempts: 5,
+});
 
-const dbClient = new DynamoDBClient({});
+const dynamo = DynamoDBDocumentClient.from(client);
 
-const dynamo = DynamoDBDocumentClient.from(dbClient);
+const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
 
-export async function regenerate(event: APIGatewayProxyEvent) {
-  const tableName = "bank-moe-questions-bank-Exams"
-  let data;
+const modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0";
 
-  //Handle empty body
+export async function createExam(event) {
+  if (!client || !dynamo) { 
+    console.log("Error with DynamoDB client");
+  }
+  const tableName = process.env.TABLE_NAME;
+  const knowledgeBaseId = process.env.KNOWLEDGE_BASE_ID;
+  console.log("Table Name:", process.env.TABLE_NAME);
+
+  // Handle empty body
   if (!event.body) {
     return {
-      statusCode: 404,
-      body: JSON.stringify({ error: true }),
+      statusCode: 400,
+      body: JSON.stringify({ error: "Request body is missing" }),
     };
   }
 
-  data = JSON.parse(event.body);
-  console.log(event.body);
+  let data = JSON.parse(event.body);
+  console.log(data)
 
-  const examID = data.examID;
-  const exam = data.examContent;
-  const contributors = data.contributors;
-  const discription = data.description;
+  let body;
+  let statusCode = 200;
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  let prompt = "";
+
+  // Handle regeneration or creation
+  if (data.examID) {
+    // Regenerate an existing exam with specific updates
+    try {
+      const result = await dynamo.send(
+        new GetCommand({
+          TableName: tableName,
+          Key: { examID: data.examID },
+        })
+      );
+
+      if (!result.Item) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ error: "Exam not found" }),
+        };
+      }
+
+      let existingExam;
+     
+        existingExam = JSON.parse(result.Item.examContent);
+     
 
 
+       // Build prompt to update exam content
+      if (data.feedback) {
+          prompt = `
+          Update the following exam based on the feedback provided.
+          Ensure that all related information is recalculated to maintain consistency.
+          Feedback: ${JSON.stringify(data.feedback, null , 2)}
+          
+          Current Exam Content:
+          ${JSON.stringify(existingExam, null, 2)}
+          
+          The type of your response must be a JSON object containing the updated exam only. Ensure all changes are reflected accurately
+          `;
+        
+        console.log("Prompt for Regeneration with Feedback:", prompt);
+      } else {
+        //for normal regenerating without feedback
+        prompt = `
+        Regenerate the following exam to improve its structure, variety, and balance. 
+        Maintain the original structure and question count unless specified otherwise.
 
-  try {
-    const prompt = `
-      As a school exam generator, you will be given an exam that you will have to change based on the
-      user's discription. Change only what the user asked for. Return only the newly modified exam.
+        Current Exam Content:
+        ${JSON.stringify(existingExam, null, 2)}
+
+        The type of your response must be a JSON object containing the updated exam only.
+        `;
+      }
+
+      console.log("Prompt for Regeneration:", prompt);
+
+      const conversation = [
+        {
+          role: "user",
+          content: [{ text: prompt }],
+        },
+      ];
+
+      const command = new ConverseCommand({
+        modelId,
+        //@ts-ignore
+        messages: conversation,
+        inferenceConfig: { maxTokens: 4096, temperature: 0.5, topP: 0.9 },
+      });
+
+      const response = await bedrockClient.send(command);
+
+      //@ts-ignore
+      const responseText = response.output.message.content[0].text;
+      console.log("Updated Exam Content:", responseText);
+
+      await dynamo.send(
+        new UpdateCommand({
+          TableName: tableName,
+          Key: { examID: data.examID },
+          UpdateExpression:
+            "SET examContent = :examContent, numOfRegenerations = numOfRegenerations + :incr, contributors = :contributors",
+          ExpressionAttributeValues: {
+            ":examContent": responseText,
+            ":incr": 1,
+            ":contributors": data.contributors,
+          },
+        })
+      );
+    console.log("Prompt built");
+
+    //const response = await bedrockClient.send(command);
+
+      body = { message: "Exam successfully regenerated", updatedExamContent: responseText };
+    } catch (error) {
+      console.error("Error regenerating exam:", error);
+      statusCode = 500;
+      body = { error: "Failed to regenerate exam", details: error.message };
+    }
+  } else {
+    // Create a new exam
+    try {
+      if (data.subject === "ARAB101") {
+        prompt = ARAB101PROMPT;
+      } else {
+        const bedrockAgentClient = new BedrockAgentRuntimeClient({
+          region: "us-east-1",
+        });
+        let retrieveCommand = new RetrieveCommand({
+          knowledgeBaseId: knowledgeBaseId ?? "EU3Z7J6SG6",
+          retrievalConfiguration: {
+            vectorSearchConfiguration: {
+              numberOfResults: 10,
+            },
+          },
+          retrievalQuery: {
+            text: `${data.class} ${data.subject} questions`,
+          },
+        });
+
+        if (!data.customize) {
+          const relevant_info = (
+            await bedrockAgentClient.send(retrieveCommand)
+          ).retrievalResults
+            ?.map((e) => e.content?.text)
+            .join("\n")
+            .toString();
+          prompt =
+            ENG102PROMPT +
+            " Refer to the following relevant information from past exams:" +
+            relevant_info;
+        }
+      }
       
 
-      This is the user's discription and changes to do: ${discription}.
+      const conversation = [
+        {
+          role: "user",
+          content: [{ text: prompt }],
+        },
+      ];
 
+      const command = new ConverseCommand({
+        modelId,
+        //@ts-ignore
+        messages: conversation,
+        inferenceConfig: { maxTokens: 4096, temperature: 0.5, topP: 0.9 },
+      });
 
-      This is the exam to modify: 
-      ${JSON.stringify(exam)}
-      the type of your response should be JSON OBJECT ONLY
-    `;
+    console.log("Prompt built");
 
-    const conversation = [
-      {
-        role: "user",
-        content: [{ text: prompt }],
-      },
-    ];
-
-    const command = new ConverseCommand({
-      modelId,
-      messages: conversation,
-      inferenceConfig: { maxTokens: 1200, temperature: 0.5, topP: 0.9 },
-    });
-
-    const response = await client.send(command);
+    const response = await bedrockClient.send(command);
 
     // Extract and print the response text.
+    //@ts-ignore
     const responseText = response.output.message.content[0].text;
 
+    console.log(responseText)
 
-    await dynamo.send(
-      new UpdateCommand({
-        TableName: tableName,
-        Key: {
-          examID: examID, // Primary key to find the item
-        },
-        UpdateExpression: "SET examContent = :examContent, contributors = :contributors", // Update only examState
-        ExpressionAttributeValues: {
-          ":examContent": responseText,
-          ":contributors": contributors,    // New value for examState
-        },
-      })
-    );
+    console.log("Model done");
+    //@ts-ignore
+    console.log("ResponseText size:", Buffer.byteLength(responseText, "utf-8"));
 
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        updatedExamContent: responseText,
-      }),
-    };
-  } catch (error) {
-    console.error("Error:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "Error generating question: " + error.message,
-      }),
-    };
+      const uuid = uuidv4();
+      await dynamo.send(
+        new PutCommand({
+          TableName: tableName,
+          Item: {
+            examID: uuid,
+            examState: "building",
+            examClass: data.class,
+            examSubject: data.subject,
+            examSemester: data.semester,
+            examDuration: data.duration,
+            examMark: data.total_mark,
+            examContent: responseText,
+            createdBy: data.created_by,
+            creationDate: data.creation_date,
+            contributors: data.contributors,
+            numOfRegenerations: 0,
+          },
+        })
+      );
+
+      body = {examID: uuid, message: "Exam successfully created"}
+    } catch (error) {
+      console.error("Error creating exam:", error);
+      statusCode = 500;
+      body = { error: "Failed to create exam", details: error.message };
+    }
   }
+
+  return {
+    statusCode,
+    body: JSON.stringify(body),
+    headers,
+  };
 }
