@@ -101,7 +101,7 @@ export async function createExam(event) {
         Current Exam Content:
         ${JSON.stringify(existingExam, null, 2)}
 
-        The type of your response must be a JSON object containing the updated exam only.
+        Return ONLY valid JSON without any extra text, markdown, or explanation.
         `;
       }
 
@@ -118,6 +118,7 @@ export async function createExam(event) {
         modelId,
         //@ts-ignore
         messages: conversation,
+        responseFormat: { type: "json" },
         inferenceConfig: { maxTokens: 4096, temperature: 0.5, topP: 0.9 },
       });
 
@@ -126,7 +127,8 @@ export async function createExam(event) {
       //@ts-ignore
       const responseText = response.output.message.content[0].text;
       console.log("Updated Exam Content:", responseText);
-
+      const parsedExam = JSON.parse(responseText);
+      
       await dynamo.send(
         new UpdateCommand({
           TableName: tableName,
@@ -134,7 +136,7 @@ export async function createExam(event) {
           UpdateExpression:
             "SET examContent = :examContent, numOfRegenerations = numOfRegenerations + :incr, contributors = :contributors",
           ExpressionAttributeValues: {
-            ":examContent": responseText,
+            ":examContent": parsedExam,
             ":incr": 1,
             ":contributors": data.contributors,
           },
