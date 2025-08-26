@@ -8,6 +8,8 @@ import { getCurrentUserEmail } from "../lib/getToken.ts";
 import ExamCreationLoader from "../components/ExamCreationLoader.tsx";
 import { useAlert } from "../components/AlertComponent.tsx";
 import SpeechRecorder from "../components/SpeechRecorder.tsx";
+import { getUserToken } from "../lib/getToken";
+
 
 
 interface Part {
@@ -49,7 +51,7 @@ const ExamForm: React.FC = () => {
   const [_semester, setSemester] = useState("");
   const [createdBy, setCreator] = useState("");
   const [creationDate, setDate] = useState("");
-  const [contributers, setContributers] = useState("");
+  const [contributors, setContributors] = useState("");
   const [examState, setExamState] = useState("");
   const [_responseResult, _setResponseResult] = useState<string>(""); // State to store the API response
   //const [examContent, setExamContent] = useState<any>(null); // Store exam content as JSON
@@ -72,12 +74,13 @@ const ExamForm: React.FC = () => {
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { showAlert } = useAlert();
-
+  const { showAlert, closeAlert} = useAlert();
   
 
-
-
+  
+  let pollAttempts = 0;
+  const MAX_ATTEMPTS = 30; // 3 دقائق
+  
   // Fetch Initial Data
   const fetchInitialData = async () => {
     try {
@@ -86,13 +89,25 @@ const ExamForm: React.FC = () => {
         path: `/examForm/${id}`, // Adjust path as needed
         method: "GET",
       });
-
-      if (!response || Object.keys(response).length === 0) {
-        console.error("Response is empty or undefined:", response);
-        showAlert({
-          type: "failure",
-          message: "Invalid exam format",
-        });
+      
+      if (!response || !response.examContent) {
+        pollAttempts++;
+        
+        if (pollAttempts === 1) {
+          showAlert({
+            type: "progress",
+            message: "جاري إنشاء الامتحان، يرجى الانتظار...",
+          });
+        }
+        if (pollAttempts < MAX_ATTEMPTS) {
+          setTimeout(fetchInitialData, 10000);
+        } else {
+          showAlert({
+            type: "failure",
+            message: "انتهى الوقت ولم يتم إنشاء الامتحان. حاول لاحقاً.",
+          });
+          setLoadingPage(false);
+        }
         return;
       }
 
@@ -100,33 +115,44 @@ const ExamForm: React.FC = () => {
 
       const content = response.examContent;
 
-      // if (response.examSubject !== "ARAB101") {
-        // Parse examContent if it's a string
-        if (typeof content === "string") {
-          try {
-            const parsedContent = JSON.parse(content);
-            setExamContent(parsedContent);
-          } catch (parseError) {
-            console.error("Failed to parse exam content as JSON:", content);
-            showAlert({
-              type:"failure",
-              message: "Invalid exam format"
-            })
-            return;
-          }
-        } else if (typeof content === "object") {
-          setExamContent(content); // Set directly if already an object
-        } else {
-          console.error("Unexpected examContent format:", typeof content);
+      if (typeof content === "string") {
+        try {
+          const parsedContent = JSON.parse(content);
+          setExamContent(parsedContent);
+          showAlert({
+            type: "success",
+            message: "تم تحميل الامتحان بنجاح"
+          });
+          setTimeout(() => {
+            closeAlert();
+          }, 2000);
+        } catch (parseError) {
+          console.error("Failed to parse exam content as JSON:", content);
           showAlert({
             type: "failure",
-            message: "Invalid exam format",
+            message: "Invalid exam format"
           });
+          setLoadingPage(false);
           return;
         }
-      // } else {
-      //   setExamContent(content);
-      // }
+      } else if (typeof content === "object") {
+        setExamContent(content);
+        showAlert({
+          type: "success",
+          message: "تم تحميل الامتحان بنجاح"
+        });
+        setTimeout(() => {
+          closeAlert();
+        }, 2000);
+      } else {
+        console.error("Unexpected examContent format:", typeof content);
+        showAlert({
+          type: "failure",
+          message: "Invalid exam format",
+        });
+        setLoadingPage(false);
+        return;
+      }
 
       // Set metadata fields
       setGrade(response.examClass || "");
@@ -134,7 +160,7 @@ const ExamForm: React.FC = () => {
       setSemester(response.examSemester || "");
       setCreator(response.createdBy || "");
       setDate(response.creationDate || "");
-      setContributers(String(response.contributors || ""));
+      setContributors(String(response.contributors || ""));
       setDuration(response.examDuration || "");
       setMark(response.examMark || "");
       setExamState(response.examState || "");
@@ -143,6 +169,7 @@ const ExamForm: React.FC = () => {
       if (response.examState !== "building") {
         navigate(`/dashboard/viewExam/${id}`);
       }
+      setLoadingPage(false);
     } catch (err: any) {
       console.error("Error fetching initial data:", err);
       showAlert({
@@ -165,13 +192,13 @@ const ExamForm: React.FC = () => {
 
       console.log("Raw Exam Content from Backend:", response.examContent);
 
-      if (!response.examContent) {
+     /* if (!response.examContent) {
         showAlert({
           type: "failure",
           message: "Failed to load",
-        });
+        });*/
         return;
-      }
+      //}
 
       // if (response.examSubject !== "ARAB101") {
 
@@ -198,13 +225,10 @@ const ExamForm: React.FC = () => {
       
         setExamContent(parsedContent);
         console.log("Parsed Exam Content Successfully Set in State:", parsedContent);
-    } catch (error) {
-      console.error("Error fetching exam content:", error);
-      showAlert({
-        type: "failure",
-        message: "Failed to load",
-      });
-    }
+      } catch (error) {
+        console.error("Error fetching exam content:", error);
+        return;
+      }
   };
 
 
@@ -308,38 +332,73 @@ const ExamForm: React.FC = () => {
     }
     
     let currentUser = await getCurrentUserEmail();
-    let newContributers = contributers;
+    let newContributors = contributors;
     if (currentUser) {
-      if (!contributers.includes(currentUser)) {
-        newContributers += " " + currentUser;
-        console.log("Contributors: " + newContributers)
+      if (!contributors.includes(currentUser)) {
+        newContributors += " " + currentUser;
+        console.log("Contributors: " + newContributors)
       }
     }
   
+    const cleanedFeedback = feedbackPayload.map(item => ({
+      section: item.section,
+      feedback: typeof item.feedback === 'string' ? item.feedback : JSON.stringify(item.feedback)
+    }));
+    /*
     const requestBody = {
       examID: id!, // Exam ID
-      feedback: feedbackPayload, // Include all provided feedback
+      feedback: cleanedFeedback, // مصفوفة feedback مضمونة كلها string
       contributors: newContributers, // Current user as contributor
     };
-  
-    console.log("Submitting Feedback Request:", requestBody);
+    */
+    if (!examContent) {
+      console.error("examContent is null!");
+      return;
+    }
+    
+    const sectionIndexes = new Set<number>();
+    cleanedFeedback.forEach(f => {
+      const match = f.section.match(/section-(\d+)/);
+      if (match) {
+        sectionIndexes.add(parseInt(match[1]));
+      }
+    });
+    
+    const reducedExamContent = {
+      ...examContent,
+      sections: examContent.sections.filter((_section: any, i: number) =>
+        sectionIndexes.has(i)
+      ),
+    };
+
+  const requestBody = {
+    examID: id!,
+    examContent: reducedExamContent, // محتوى الامتحان الحالي من الـ state
+    description: cleanedFeedback.map(f => `${f.section}: ${f.feedback}`).join(" | "), 
+    contributors: newContributors,
+    sectionIndexes:sectionIndexes,
+    };
+    
+    // ✅ طباعة واضحة لمراجعة الشكل النهائي قبل الإرسال
+    console.log("📦 Final requestBody to be sent:", JSON.stringify(requestBody, null, 2));
+
   
     try {
       setLoading(true);
 
-      const functionURL = import.meta.env.VITE_CREATE_EXAM_FUNCTION_URL;
-      console.log("Function URL:", functionURL);
-
-      const response = await fetch(functionURL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+      const token = await getUserToken(currentUser);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/regenerate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(requestBody),
+      
       });
+      
   
       console.log("API Response:", response);
-
       const data = await response.json();
   
       // Check if the backend returns the updated content
@@ -557,7 +616,7 @@ const ExamForm: React.FC = () => {
                   textOverflow: "ellipsis", // Adds ellipsis when content overflows
                 }}
               >
-                {contributers}
+                {contributors}
               </div>
             </div>
           </div>
