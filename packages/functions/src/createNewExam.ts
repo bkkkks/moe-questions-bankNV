@@ -154,7 +154,48 @@ export async function createExam(event) {
     // Create a new exam
     try {
       if (data.subject === "ARAB101") {
-        prompt = ARAB101PROMPT;
+        const bedrockAgentClient = new BedrockAgentRuntimeClient({
+          region: "us-east-1",
+        });
+        let retrieveCommand = new RetrieveCommand({
+          knowledgeBaseId: knowledgeBaseId ?? "EU3Z7J6SG6",
+          retrievalConfiguration: {
+            vectorSearchConfiguration: {
+              numberOfResults: 10,
+              filter: {
+                equals: {
+                  key: "language",
+                  value: "ar",
+                },
+              },
+            },
+          },
+          retrievalQuery: {
+            text: `أسئلة ومواضيع امتحان لـ ${data.subject} ${data.class}`,
+          },
+        });
+
+        const retrievalResults = (
+          await bedrockAgentClient.send(retrieveCommand)
+        ).retrievalResults;
+
+        if (!retrievalResults || retrievalResults.length === 0) {
+          return {
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "Could not generate exam.",
+              message:
+                "There is not enough Arabic material in the knowledge base for the selected subject. Please upload more materials.",
+            }),
+            headers,
+          };
+        }
+
+        const relevant_info = retrievalResults
+          .map((e) => e.content?.text)
+          .join("\n\n");
+
+        prompt = `${ARAB101PROMPT}\n\nاستخدم المواد التالية لتوليد محتوى لهيكل الامتحان المحدد أعلاه:\n\n${relevant_info}`;
       } else {
         const bedrockAgentClient = new BedrockAgentRuntimeClient({
           region: "us-east-1",
@@ -164,25 +205,40 @@ export async function createExam(event) {
           retrievalConfiguration: {
             vectorSearchConfiguration: {
               numberOfResults: 10,
+              filter: {
+                equals: {
+                  key: "language",
+                  value: "en",
+                },
+              },
             },
           },
           retrievalQuery: {
-            text: `${data.class} ${data.subject} questions`,
+            text: `Exam questions and topics for ${data.subject} ${data.class}`,
           },
         });
 
-        if (!data.customize) {
-          const relevant_info = (
-            await bedrockAgentClient.send(retrieveCommand)
-          ).retrievalResults
-            ?.map((e) => e.content?.text)
-            .join("\n")
-            .toString();
-          prompt =
-            ENG102PROMPT +
-            " Refer to the following relevant information from past exams:" +
-            relevant_info;
+        const retrievalResults = (
+          await bedrockAgentClient.send(retrieveCommand)
+        ).retrievalResults;
+
+        if (!retrievalResults || retrievalResults.length === 0) {
+          return {
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "Could not generate exam.",
+              message:
+                "There is not enough English material in the knowledge base for the selected subject. Please upload more materials.",
+            }),
+            headers,
+          };
         }
+
+        const relevant_info = retrievalResults
+          .map((e) => e.content?.text)
+          .join("\n\n");
+
+        prompt = `${ENG102PROMPT}\n\nUse the following materials to generate the content for the exam structure defined above:\n\n${relevant_info}`;
       }
       
 

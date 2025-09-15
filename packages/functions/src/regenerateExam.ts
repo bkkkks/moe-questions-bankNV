@@ -27,26 +27,29 @@ export async function regenerate(event: APIGatewayProxyEvent) {
   }
 
   const data = JSON.parse(event.body);
-  const { examID, feedback, contributors, sectionIndexes } = data;
+  const examID = data.examID;
+  const exam = data.examContent;
+  const contributors = data.contributors;
+  const description = data.description;
+  const sectionIndexes = data.sectionIndexes;
 
-  if (
-    !examID ||
-    !Array.isArray(sectionIndexes) ||
-    sectionIndexes.length === 0 ||
-    !Array.isArray(feedback) ||
-    feedback.length === 0
-  ) {
+  console.log("📦 examID:", examID);
+  console.log("📦 examContent:", JSON.stringify(exam, null, 2));
+  console.log("📦 description:", JSON.stringify(description, null, 2));
+  console.log("📦 contributors:", contributors);
+
+  if (!examID || sectionIndexes === undefined || !description) {
     return {
       statusCode: 400,
       body: JSON.stringify({
         error: true,
-        message:
-          "examID, sectionIndexes, and feedback are required and must be non-empty arrays.",
+        message: "examID, sectionIndexes, and description are required",
       }),
     };
   }
 
   try {
+    // ✅ 1. Fetch full exam from DynamoDB
     const { Item } = await dynamo.send(
       new GetCommand({
         TableName: tableName,
@@ -61,81 +64,77 @@ export async function regenerate(event: APIGatewayProxyEvent) {
       };
     }
 
-    const fullExam =
-      typeof Item.examContent === "string"
-        ? JSON.parse(Item.examContent)
-        : Item.examContent;
+    const exam = typeof Item.examContent === "string"
+      ? JSON.parse(Item.examContent)
+      : Item.examContent;
 
-    for (const index of sectionIndexes) {
-      const sectionFeedback = feedback.find(
-        (f: any) => f.section === `section-${index}`
-      );
-      if (!sectionFeedback) {
-        console.warn(`No feedback found for section index ${index}. Skipping.`);
-        continue;
-      }
-
-      if (!fullExam.sections || !fullExam.sections[index]) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({
-            error: true,
-            message: `Invalid section index: ${index}`,
-          }),
-        };
-      }
-
-      const targetSection = fullExam.sections[index];
-
-      const prompt = `
-        You are an AI exam editor. Apply the user's description to the following section only.
-
-        💡 Section to be modified (JSON):
-        ${JSON.stringify(targetSection, null, 2)}
-
-        📝 User's description and instructions:
-        ${JSON.stringify(sectionFeedback.feedback)}
-
-        Instructions:
-        - Apply the description(feedback) precisely to this section.
-        - Do NOT modify any other part of the exam.
-        - Return ONLY the updated section object (valid JSON).
-      `;
-
-      const command = new ConverseCommand({
-        modelId,
-        messages: [{ role: "user", content: [{ text: prompt }] }],
-        inferenceConfig: { maxTokens: 8000, temperature: 0.5, topP: 0.9 },
-      });
-
-      const response = await client.send(command);
-      const responseText = response.output?.message?.content?.[0]?.text ?? "";
-
-      let updatedSection;
-      try {
-        const jsonStartIndex = responseText.indexOf('{');
-        const jsonEndIndex = responseText.lastIndexOf('}');
-        if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-            const jsonString = responseText.substring(jsonStartIndex, jsonEndIndex + 1);
-            updatedSection = JSON.parse(jsonString);
-        } else {
-            throw new Error("No JSON object found in model response");
-        }
-      } catch (err) {
-        console.error("❌ Invalid JSON from model:", responseText);
-        return {
-          statusCode: 400,
-          body: JSON.stringify({
-            error: true,
-            message: "Model response is not valid JSON",
-            responseText: responseText,
-          }),
-        };
-      }
-
-      fullExam.sections[index] = updatedSection;
+    if (!exam.sections || !exam.sections[sectionIndexes]) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: true,
+          message: `Invalid sectionIndexes: ${sectionIndexes}`,
+        }),
+      };
     }
 
+    const targetSection = exam.sections[sectionIndexes];
+
+    // ✅ 2. Build prompt only for that section
+    const prompt = `
+    You are an AI exam editor. Apply the user's description to the following section only.
+
+    💡 Section to be modified (JSON):
+    ${JSON.stringify(targetSection, null, 2)}
+
+    📝 User's description and instructions:
+    ${JSON.stringify(description)}
+
+    Instructions:
+    - Apply the description(feedback) precisely to this section.
+    - Do NOT modify any other part of the exam.
+    - Return ONLY the updated section object (valid JSON).
+    `;
+
+    const conversation = [
+      {
+        role: "user",
+        content: [{ text: prompt }],
+      },
+    ];
+
+    const command = new ConverseCommand({
+      modelId,
+      messages: conversation,
+      inferenceConfig: { maxTokens: 800, temperature: 0.5, topP: 0.9 },
+    });
+
+    const response = await client.send(command);
+
+    const responseText =
+      (response.output?.message?.content ?? [])
+        .map((c: any) => c?.text)
+        .find((t: string) => typeof t === "string" && t.trim().length > 0) ?? "";
+
+    // ✅ 3. Parse model output
+    let updatedSection;
+    try {
+      updatedSection = JSON.parse(responseText);
+    } catch (err) {
+      console.error("❌ Invalid JSON from model:", responseText);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: true,
+          message: "Model response is not valid JSON",
+        }),
+      };
+    }
+
+    // ✅ 4. Replace section in exam
+    exam.sections[sectionIndexes ] = updatedSection;
+
+    // ✅ 5. Save back to DynamoDB
     await dynamo.send(
       new UpdateCommand({
         TableName: tableName,
@@ -143,8 +142,8 @@ export async function regenerate(event: APIGatewayProxyEvent) {
         UpdateExpression:
           "SET examContent = :examContent, contributors = :contributors",
         ExpressionAttributeValues: {
-          ":examContent": JSON.stringify(fullExam),
-          ":contributors": contributors || Item.contributors,
+          ":examContent": JSON.stringify(exam),
+          ":contributors": contributors || [],
         },
       })
     );
@@ -152,7 +151,9 @@ export async function regenerate(event: APIGatewayProxyEvent) {
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ updatedExamContent: fullExam }),
+      body: JSON.stringify({
+        updatedExamContent: exam,
+      }),
     };
   } catch (error: any) {
     console.error("Error:", error);
